@@ -1,5 +1,4 @@
-// Interactive Week 1 visualization.
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { select } from 'd3-selection';
 import { scaleLinear } from 'd3-scale';
 import { useDimensions } from './useDimensions';
@@ -79,8 +78,12 @@ const BEE_RADIUS = 18;
 export function ResponsivePseudoScatterPlot() {
   const svgRef = useRef<SVGSVGElement>(null);
   const { ref: divRef, dimensions } = useDimensions();
-  const [bees, setBees] = useState(initialBees);
+  const [bees, setBees] = useState(() => initialBees.map((bee) => ({ ...bee })));
   const [selectedBeeId, setSelectedBeeId] = useState(initialBees[0].id);
+  const resetRoute = useCallback(() => {
+    setBees(initialBees.map((bee) => ({ ...bee })));
+    setSelectedBeeId(initialBees[0].id);
+  }, []);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -110,6 +113,22 @@ export function ResponsivePseudoScatterPlot() {
       .attr('y2', '1');
     background.append('stop').attr('offset', '0%').attr('stop-color', '#fff9dc');
     background.append('stop').attr('offset', '100%').attr('stop-color', '#fef3c7');
+    const glow = defs
+      .append('radialGradient')
+      .attr('id', 'honey-glow')
+      .attr('cx', '76%')
+      .attr('cy', '16%')
+      .attr('r', '70%');
+    glow
+      .append('stop')
+      .attr('offset', '0%')
+      .attr('stop-color', '#fbbf24')
+      .attr('stop-opacity', 0.2);
+    glow
+      .append('stop')
+      .attr('offset', '100%')
+      .attr('stop-color', '#fbbf24')
+      .attr('stop-opacity', 0);
     defs
       .append('pattern')
       .attr('id', 'honeycomb')
@@ -133,6 +152,11 @@ export function ResponsivePseudoScatterPlot() {
       .attr('width', dimensions.width)
       .attr('height', dimensions.height)
       .attr('fill', 'url(#honeycomb)');
+    chart
+      .append('rect')
+      .attr('width', dimensions.width)
+      .attr('height', dimensions.height)
+      .attr('fill', 'url(#honey-glow)');
 
     const pollenLayer = chart.append('g').attr('fill', '#f59e0b').attr('fill-opacity', 0.7);
     const pollenDots = pollenLayer
@@ -180,6 +204,33 @@ export function ResponsivePseudoScatterPlot() {
           : 'Drag a bee to redraw its route • Click one to explore its stop',
       );
 
+    const resetControl = chart
+      .append('g')
+      .attr('role', 'button')
+      .attr('tabindex', 0)
+      .attr('aria-label', 'Reset bee flight route')
+      .attr('transform', `translate(${dimensions.width - (isCompact ? 126 : 148)}, 20)`)
+      .style('cursor', 'pointer');
+    resetControl
+      .append('rect')
+      .attr('width', isCompact ? 106 : 128)
+      .attr('height', 34)
+      .attr('rx', 17)
+      .attr('fill', '#fffbeb')
+      .attr('fill-opacity', 0.94)
+      .attr('stroke', '#f59e0b')
+      .attr('stroke-width', 1.5);
+    resetControl
+      .append('text')
+      .attr('x', isCompact ? 53 : 64)
+      .attr('y', 22)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#92400e')
+      .attr('font-family', 'ui-sans-serif, system-ui, sans-serif')
+      .attr('font-size', isCompact ? 11 : 12)
+      .attr('font-weight', 800)
+      .text('Reset route');
+
     chart
       .append('path')
       .attr('class', 'flight-path')
@@ -222,6 +273,7 @@ export function ResponsivePseudoScatterPlot() {
       .attr('repeatCount', 'indefinite');
     beeGroups
       .append('circle')
+      .attr('class', 'bee-shell')
       .attr('r', BEE_RADIUS + 5)
       .attr('fill', '#fef3c7')
       .attr('stroke', (d) => d.color)
@@ -316,6 +368,12 @@ export function ResponsivePseudoScatterPlot() {
     const selectBee = (bee: Bee) => setSelectedBeeId(bee.id);
 
     beeGroups
+      .on('pointerenter', function () {
+        select(this).select<SVGCircleElement>('.bee-shell').attr('stroke-width', 5);
+      })
+      .on('pointerleave', function () {
+        select(this).select<SVGCircleElement>('.bee-shell').attr('stroke-width', 3);
+      })
       .on('click', (_event, bee) => selectBee(bee))
       .on('keydown', (event: KeyboardEvent, bee) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -365,8 +423,15 @@ export function ResponsivePseudoScatterPlot() {
         };
       });
 
+    resetControl.on('click', resetRoute).on('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        resetRoute();
+      }
+    });
+
     return () => removeDragListeners?.();
-  }, [bees, dimensions, selectedBeeId]);
+  }, [bees, dimensions, resetRoute, selectedBeeId]);
 
   return (
     <div ref={divRef} className="relative h-full w-full">

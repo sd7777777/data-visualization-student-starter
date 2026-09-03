@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430">
+  <rect width="900" height="430" fill="#fbf7ee"/>
+  <g stroke="#b8ad9d" fill="none" stroke-width="2"><rect x="55" y="35" width="235" height="345" rx="12"/><rect x="330" y="35" width="235" height="345" rx="12"/><rect x="605" y="35" width="235" height="345" rx="12"/></g>
+  <g fill="#27313c" font-family="Georgia,serif"><text x="82" y="86" font-size="23">1 · THE HOOK</text><text x="357" y="86" font-size="23">2 · THE SHIFT</text><text x="632" y="86" font-size="23">3 · THE CAVEAT</text></g>
+  <g font-family="ui-monospace,monospace" font-size="14" fill="#8b8172"><text x="82" y="120">Are bees disappearing?</text><text x="82" y="145">big national trend</text><text x="357" y="120">managed colonies</text><text x="357" y="145">state differences</text><text x="632" y="120">what is missing?</text><text x="632" y="145">wild bees ≠ hives</text></g>
+  <path d="M84 300 C125 260 145 285 182 220 S230 170 260 190" fill="none" stroke="#d98b25" stroke-width="4"/><path d="M357 300 C405 240 430 285 470 210 S520 180 540 160" fill="none" stroke="#27313c" stroke-width="4"/><path d="M632 215 L810 215 M632 250 L760 250 M632 285 L700 285" stroke="#f8c63c" stroke-width="13" stroke-linecap="round"/>
+  <g fill="#27313c" font-family="ui-monospace,monospace" font-size="15"><text x="135" y="350">scroll ↓</text><text x="411" y="350">scroll ↓</text><text x="688" y="350">reflect</text></g>
+</svg>

@@ -60,7 +60,7 @@ function App() {
       )}
 
       {/* Right Content - Visualization */}
-      <div className="flex-1 flex items-center justify-center overflow-auto">
+      <div className="flex-1 flex items-start justify-center overflow-auto">
         {SelectedComponent ? <SelectedComponent /> : <div>Example not found</div>}
       </div>
     </div>

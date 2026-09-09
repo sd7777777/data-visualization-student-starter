@@ -1,0 +1,12 @@
+export type Summary = { providers: number; claims: number; cost: number; costPerClaim: number; opioidShare: number; antibioticShare: number; averageRisk: number | null };
+export type Specialty = Summary & { specialty: string };
+export type Provider = { npi: string; name: string; city: string; state: string; specialty: string; claims: number; cost: number; costPerClaim: number; opioidRate: number | null };
+export type Area = { code: string; name: string; summary: Summary; specialties: Specialty[]; topProviders: Provider[] };
+export type SpecialtyProfile = { specialty: string; national: Specialty; states: ({ code: string; name: string } & Summary)[] };
+export type Distribution = { key: string; label: string; bins: { label: string; count: number }[] };
+export type SchemaField = { name: string; label: string; classification: string; group: string; missing: number; missingRate: number; markers: number };
+export type Dataset = { meta: { title: string; year: number; rows: number; columns: number; source: string; note: string }; areas: Area[]; specialtyProfiles: SpecialtyProfile[]; distributions: Distribution[]; schema: SchemaField[] };
+export const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+export const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 });
+export const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+export const percent = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });

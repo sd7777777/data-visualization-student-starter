@@ -23,6 +23,12 @@ importers:
       cmdk:
         specifier: 1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      d3-array:
+        specifier: 3.2.4
+        version: 3.2.4
+      d3-scale:
+        specifier: 4.0.2
+        version: 4.0.2
       date-fns:
         specifier: 4.1.0
         version: 4.1.0
@@ -78,6 +84,12 @@ importers:
       '@tailwindcss/postcss':
         specifier: 4.2.1
         version: 4.2.1
+      '@types/d3-array':
+        specifier: 3.2.2
+        version: 3.2.2
+      '@types/d3-scale':
+        specifier: 4.0.9
+        version: 4.0.9
       '@types/node':
         specifier: 22.19.19
         version: 22.19.19

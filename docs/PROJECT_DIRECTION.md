@@ -9,8 +9,9 @@ The primary audience is a healthcare strategy, operations, analytics, or product
 1. Which specialties occupy unusual combinations of prescription volume and cost per claim?
 2. How do those specialty profiles change across states and territories?
 3. Which specialties have comparatively high reported opioid or antibiotic claim shares?
-4. Which provider records contribute most to drug cost within the selected geography?
-5. Where should a user investigate further, while avoiding unsupported claims about quality or causation?
+4. How widely does a large specialty vary across states on the same measure?
+5. Which provider records contribute most to drug cost within the selected geography?
+6. Which source fields are sufficiently complete for a follow-up analysis?
 
 ## Task abstraction
 
@@ -25,11 +26,11 @@ These tasks stay independent of the current chart type so the visualization can 
 
 ## Data abstraction
 
-The source is a provider table with one row per NPI. It combines categorical attributes (specialty, entity type), spatial identifiers (state, ZIP, RUCA), quantitative attributes (claims, fills, days supplied, cost, beneficiary counts, risk score), and a calendar-year time attribute. The current browser dataset aggregates the table into geography × specialty groups and retains a small provider detail layer.
+The source is a provider table with one row per NPI. It combines categorical attributes (specialty, entity type), spatial identifiers (state, ZIP, RUCA), quantitative attributes (claims, fills, days supplied, cost, beneficiary counts, risk score), and a calendar-year time attribute. The browser file contains geography × specialty aggregates, state profiles for 18 major specialties, whole-file distributions, a 10-record provider detail layer per geography, and completeness metadata for all 84 fields.
 
 ## Visual rationale
 
-The primary field uses position for the two measures being compared because position supports more accurate comparison than color or area. Circle area represents provider count and remains secondary. A selected circle uses a yellow ring and visible label, avoiding dependence on color alone. The coordinated detail panel provides exact values and makes keyboard focus useful.
+The primary field uses position for the two measures being compared because position supports more accurate comparison than color or area. D3 logarithmic scales preserve long-tailed variation; circle area uses a square-root scale for provider count and remains secondary. Orange identifies the active mark, and a coordinated detail panel supplies exact values for pointer or keyboard focus.
 
 The two lenses deliberately ask different questions:
 
@@ -42,8 +43,8 @@ CMS states that the dataset covers Medicare Part D activity, not a provider's co
 
 ## Likely next milestones
 
-- Add state-to-state small multiples for one selected specialty.
 - Introduce a map only when the spatial question is clear enough to justify it.
 - Add multi-year comparison after establishing a stable transformation pipeline across CMS releases.
 - Add annotation for a small number of source-backed findings.
+- Add the student's hand-drawn exploration sketches and design notes.
 - Run keyboard, color-contrast, and mobile usability checks before final presentation.

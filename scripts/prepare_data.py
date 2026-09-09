@@ -8,6 +8,7 @@ an intentionally small JSON summary suitable for GitHub Pages.
 from __future__ import annotations
 
 import argparse
+import bisect
 import csv
 import heapq
 import json
@@ -32,6 +33,24 @@ STATE_NAMES = {
     "WA": "Washington", "WI": "Wisconsin", "WV": "West Virginia", "WY": "Wyoming",
     "AA": "Armed Forces Americas", "AE": "Armed Forces Europe", "AP": "Armed Forces Pacific",
     "XX": "Unknown", "ZZ": "Foreign country",
+}
+
+HISTOGRAMS = {
+    "claims": {
+        "label": "Claims per provider",
+        "bounds": [25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000],
+        "labels": ["11–25", "26–50", "51–100", "101–250", "251–500", "501–1k", "1k–2.5k", "2.5k–5k", "5k–10k", ">10k"],
+    },
+    "cost": {
+        "label": "Total drug cost per provider",
+        "bounds": [1_000, 5_000, 10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000],
+        "labels": ["≤$1k", "$1k–5k", "$5k–10k", "$10k–50k", "$50k–100k", "$100k–500k", "$500k–1m", "$1m–5m", ">$5m"],
+    },
+    "costPerClaim": {
+        "label": "Drug cost per claim",
+        "bounds": [10, 25, 50, 100, 250, 500, 1_000, 2_500],
+        "labels": ["≤$10", "$10–25", "$25–50", "$50–100", "$100–250", "$250–500", "$500–1k", "$1k–2.5k", ">$2.5k"],
+    },
 }
 
 
@@ -77,16 +96,79 @@ def provider_name(row: dict[str, str]) -> str:
     return " ".join(part for part in parts if part).title()
 
 
+def field_classification(name: str) -> str:
+    if name == "Prscrbr_NPI":
+        return "Identifier"
+    if name in {"Prscrbr_State_Abrvtn", "Prscrbr_State_FIPS", "Prscrbr_Zip5", "Prscrbr_RUCA"}:
+        return "Spatial identifier"
+    categorical_terms = ("Name", "MI", "Crdntls", "Ent_Cd", "St1", "St2", "City", "Desc", "Cntry", "Type", "Src", "Flag")
+    if any(term in name for term in categorical_terms):
+        return "Categorical"
+    return "Quantitative"
+
+
+def field_group(name: str) -> str:
+    if name.startswith("Prscrbr_"):
+        return "Provider"
+    if name.startswith("GE65_") or name.startswith("Bene_"):
+        return "Beneficiary"
+    if name.startswith("Brnd_") or name.startswith("Gnrc_") or name.startswith("Othr_"):
+        return "Drug type"
+    if name.startswith("MAPD_") or name.startswith("PDP_") or name.startswith("LIS_") or name.startswith("NonLIS_"):
+        return "Plan and subsidy"
+    if name.startswith("Opioid_") or name.startswith("Antbtc_") or name.startswith("Antpsyct_"):
+        return "Focused drug category"
+    return "Overall utilization"
+
+
+def field_label(name: str) -> str:
+    replacements = {
+        "Prscrbr": "Prescriber", "Tot": "Total", "Clms": "claims", "Cst": "cost",
+        "Benes": "beneficiaries", "Bene": "beneficiary", "Sprsn": "suppression",
+        "Suprsn": "suppression", "Suply": "supply", "Cntry": "country", "Abrvtn": "abbreviation",
+        "Crdntls": "credentials", "Gnrc": "generic", "Brnd": "brand", "Antbtc": "antibiotic",
+        "Antpsyct": "antipsychotic", "Prscrbr": "prescriber", "Avg": "average", "Scre": "score",
+        "Cnt": "count", "Feml": "female", "Ndual": "non-dual", "Hspnc": "Hispanic",
+        "Natind": "American Indian / Alaska Native", "Api": "Asian / Pacific Islander",
+    }
+    words = [replacements.get(part, part) for part in name.split("_")]
+    return " ".join(words).replace("GE65", "age 65+").replace("LT", "under").replace("GT", "over").replace("LA", "long-acting")
+
+
+def distribution_payload(counts: dict[str, list[int]]) -> list[dict[str, object]]:
+    return [
+        {
+            "key": key,
+            "label": config["label"],
+            "bins": [
+                {"label": label, "count": count}
+                for label, count in zip(config["labels"], counts[key])
+            ],
+        }
+        for key, config in HISTOGRAMS.items()
+    ]
+
+
 def prepare(source: Path, output: Path) -> None:
     area_totals: dict[str, dict[str, float]] = defaultdict(blank_bucket)
     specialties: dict[tuple[str, str], dict[str, float]] = defaultdict(blank_bucket)
     top_providers: dict[str, list[tuple[float, int, dict[str, object]]]] = defaultdict(list)
+    distribution_counts = {key: [0] * len(config["labels"]) for key, config in HISTOGRAMS.items()}
     row_count = 0
 
     with source.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
-        column_count = len(reader.fieldnames or [])
+        fields = reader.fieldnames or []
+        column_count = len(fields)
+        missing_counts = {field: 0 for field in fields}
+        marker_counts = {field: 0 for field in fields}
         for row_count, row in enumerate(reader, start=1):
+            for field in fields:
+                value = row[field].strip()
+                if not value:
+                    missing_counts[field] += 1
+                elif value in {"*", "#"}:
+                    marker_counts[field] += 1
             state = row["Prscrbr_State_Abrvtn"].strip() or "XX"
             specialty = row["Prscrbr_Type"].strip() or "Unclassified"
             claims = number(row["Tot_Clms"]) or 0
@@ -95,6 +177,11 @@ def prepare(source: Path, output: Path) -> None:
             antibiotic_claims = number(row["Antbtc_Tot_Clms"]) or 0
             beneficiaries = number(row["Tot_Benes"])
             risk = number(row["Bene_Avg_Risk_Scre"])
+            cost_per_claim = cost / claims if claims else 0
+
+            for key, value in {"claims": claims, "cost": cost, "costPerClaim": cost_per_claim}.items():
+                index = bisect.bisect_left(HISTOGRAMS[key]["bounds"], value)
+                distribution_counts[key][index] += 1
 
             for area in ("US", state):
                 for bucket in (area_totals[area], specialties[(area, specialty)]):
@@ -115,7 +202,7 @@ def prepare(source: Path, output: Path) -> None:
                 "specialty": specialty,
                 "claims": round(claims),
                 "cost": round(cost),
-                "costPerClaim": round(cost / claims, 2) if claims else 0,
+                "costPerClaim": round(cost_per_claim, 2),
                 "opioidRate": number(row["Opioid_Prscrbr_Rate"]),
             }
             for area in ("US", state):
@@ -144,6 +231,42 @@ def prepare(source: Path, output: Path) -> None:
         })
 
     areas.sort(key=lambda item: (item["code"] != "US", item["name"]))
+    national_specialties = sorted(
+        (
+            {"specialty": specialty, **clean_bucket(bucket)}
+            for (area, specialty), bucket in specialties.items()
+            if area == "US"
+        ),
+        key=lambda item: item["cost"],
+        reverse=True,
+    )[:18]
+    specialty_profiles = []
+    state_codes = [code for code in area_totals if code != "US"]
+    for national in national_specialties:
+        specialty = str(national["specialty"])
+        states = [
+            {
+                "code": code,
+                "name": STATE_NAMES.get(code, code),
+                **clean_bucket(specialties[(code, specialty)]),
+            }
+            for code in state_codes
+            if (code, specialty) in specialties
+        ]
+        specialty_profiles.append({"specialty": specialty, "national": national, "states": states})
+
+    schema = [
+        {
+            "name": field,
+            "label": field_label(field),
+            "classification": field_classification(field),
+            "group": field_group(field),
+            "missing": missing_counts[field],
+            "missingRate": round(missing_counts[field] / row_count * 100, 2),
+            "markers": marker_counts[field],
+        }
+        for field in fields
+    ]
     payload = {
         "meta": {
             "title": "Medicare Part D Prescribers - by Provider",
@@ -154,6 +277,9 @@ def prepare(source: Path, output: Path) -> None:
             "note": "Provider-level totals. Suppressed subgroup values are excluded, so opioid and antibiotic shares are conservative lower-bound estimates.",
         },
         "areas": areas,
+        "specialtyProfiles": specialty_profiles,
+        "distributions": distribution_payload(distribution_counts),
+        "schema": schema,
     }
 
     output.parent.mkdir(parents=True, exist_ok=True)

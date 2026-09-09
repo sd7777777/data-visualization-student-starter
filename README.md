@@ -1,22 +1,29 @@
-# Part D Fieldnotes
+# Part D Field Notes
 
 An interactive portfolio project for exploring 2024 Medicare Part D prescriber patterns by geography and clinical specialty. The project is designed to grow through a semester of visualization assignments without accumulating a maze of disconnected pages.
 
 ## Current milestone
 
-- Streams 1,416,883 provider records into a 427 KB browser-ready summary.
-- Compares specialties through an interactive bubble field.
-- Switches between cost/volume and focused drug-category lenses.
-- Filters the complete experience by state, territory, or national view.
-- Adds provider-level context without presenting cost as a quality ranking.
-- Uses a static build that is compatible with GitHub Pages.
+- Streams 1,416,883 provider records into a 608 KB browser-ready analysis file.
+- Uses D3 scales for an interactive specialty scatterplot, median references, a state lollipop comparison, and provider distributions.
+- Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
+- Includes a searchable inventory and classification of all 84 CMS source fields.
+- Keeps the attached Canvas assignment evidence in a dedicated coursework route.
+- Exports as a static site compatible with GitHub Pages.
 
 ## Project map
 
 ```text
 app/
-  page.tsx                  Main experience and visualization logic
+  page.tsx                  Main analytical narrative
+  lab/page.tsx              Dataset profile and field inventory
+  coursework/page.tsx       Canvas brief crosswalk and task analysis
   globals.css               Shared visual theme and typography
+components/
+  analysis-charts.tsx       Reusable D3 visualization components
+  site-header.tsx           Shared navigation
+lib/
+  prescriber.ts             Shared data types and formatters
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
@@ -27,7 +34,7 @@ docs/
   deploy-pages.yml          GitHub Pages deployment
 ```
 
-The site currently stays in one main page on purpose. New assignments should improve or add coordinated views to the same exploration before creating another route.
+The site is deliberately split into three routes: a portfolio-facing narrative, an inspectable data lab, and course evidence. New assignments can add a view or extend an existing route without turning the main story into a checklist.
 
 ## Work locally
 
@@ -38,7 +45,7 @@ pnpm install
 pnpm dev
 ```
 
-Open the local address shown in the terminal. Most edits happen in `app/page.tsx`; global color and type choices live in `app/globals.css`.
+Open the local address shown in the terminal. Visualization logic lives in `components/analysis-charts.tsx`; global layout and type choices live in `app/globals.css`.
 
 ## Refresh the data
 

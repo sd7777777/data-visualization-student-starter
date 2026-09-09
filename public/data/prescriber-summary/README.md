@@ -5,7 +5,7 @@
 - Source: https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/medicare-part-d-prescribers-by-provider
 - Source grain: one record per National Provider Identifier (NPI)
 - Source size: 1,416,883 rows and 84 columns
-- Derived file size: approximately 427 KB
+- Derived file size: approximately 608 KB
 - Refresh script: `scripts/prepare_data.py`
 
 ## Attributes retained in the derived file
@@ -27,6 +27,6 @@
 
 ## Transformations
 
-The script aggregates totals for the national view and each provider state/territory. It retains the 32 specialties with the highest total drug cost in each geography and the ten highest-cost provider records for supporting detail. It does not impute suppressed values.
+The script aggregates totals for the national view and each provider state/territory. It retains the 32 specialties with the highest total drug cost in each geography, state profiles for the 18 leading national specialties, fixed-bin distributions over all provider records, completeness and suppression-marker counts for all 84 source fields, and the ten highest-cost provider records for supporting detail. It does not impute suppressed values.
 
 Provider beneficiary counts are not summed into a geography-level unique-beneficiary figure because one beneficiary may receive prescriptions from multiple providers.

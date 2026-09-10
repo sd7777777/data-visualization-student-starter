@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Part D Field Notes | Medicare Prescriber Analysis',
-  description: 'An interactive analysis of 2024 Medicare Part D prescribing patterns by specialty, state, and provider record.',
+  title: 'Medicare Part D Prescriber Explorer',
+  description: 'Explore 2024 Medicare Part D prescribing records by specialty, state, cost, volume, and drug category.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

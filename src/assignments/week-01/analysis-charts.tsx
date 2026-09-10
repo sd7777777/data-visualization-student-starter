@@ -26,7 +26,7 @@ export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { sp
   const label = lens === 'economics' ? (v: number) => `$${short.format(v)}` : (v: number) => `${oneDecimal.format(v)}%`;
   const selectedDatum = specialties.find((d) => d.specialty === selected);
   return <figure className="chart-panel">
-    <div className="figure-head"><div><span className="figure-no">FIG. 01</span><h2>{lens === 'economics' ? 'Price and prescribing volume are separate stories' : 'Focused categories occupy distinct clinical territory'}</h2></div><p>Each mark is a specialty. Circle area represents provider records. Both axes use logarithmic scales.</p></div>
+    <div className="figure-head"><div><span className="figure-no">01</span><h2>{lens === 'economics' ? 'Cost per claim vs. claims per provider' : 'Opioid vs. antibiotic claim share'}</h2></div><p>One circle per specialty. Circle area shows provider records. Axes use log scales.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="scatter-title scatter-desc" className="scatter">
       <title id="scatter-title">Specialty comparison scatter plot</title><desc id="scatter-desc">Interactive scatter plot of the highest-cost specialties in the selected geography.</desc>
       {xTicks.map((tick) => <g key={`x-${tick}`}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{label(tick)}</text></g>)}
@@ -39,6 +39,64 @@ export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { sp
       <text transform={`translate(18 ${(m.top + height - m.bottom) / 2}) rotate(-90)`} textAnchor="middle" className="axis-label">{lens === 'economics' ? 'CLAIMS / PROVIDER →' : 'REPORTED ANTIBIOTIC CLAIM SHARE →'}</text>
     </svg>
     <figcaption>Source: CMS Medicare Part D Prescribers by Provider, 2024. Category shares omit suppressed values.</figcaption>
+  </figure>;
+}
+
+export type RankMetric = 'cost' | 'claims' | 'providers';
+
+const rankValue = (d: Specialty, metric: RankMetric) => d[metric];
+const rankTitle = (metric: RankMetric) => metric === 'cost' ? 'Total drug cost' : metric === 'claims' ? 'Total claims' : 'Provider records';
+const rankFormat = (metric: RankMetric, value: number) => metric === 'cost' ? `$${short.format(value)}` : short.format(value);
+
+export function SpecialtyRanking({ specialties, metric, selected, onSelect }: { specialties: Specialty[]; metric: RankMetric; selected: string; onSelect: (value: string) => void }) {
+  const width = 760, height = 470;
+  const m = { top: 20, right: 72, bottom: 42, left: 188 };
+  const rows = [...specialties].sort((a, b) => rankValue(b, metric) - rankValue(a, metric)).slice(0, 12);
+  const max = Math.max(...rows.map((d) => rankValue(d, metric)));
+  const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
+  const step = (height - m.top - m.bottom) / rows.length;
+  return <figure className="chart-panel mini-chart">
+    <div className="figure-head"><div><span className="figure-no">02</span><h2>Largest specialties</h2></div><p>Top 12 in the selected geography by {rankTitle(metric).toLowerCase()}.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${rankTitle(metric)} by specialty`}>
+      {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{rankFormat(metric, tick)}</text></g>)}
+      {rows.map((d, i) => {
+        const yy = m.top + i * step + step * .18;
+        const active = d.specialty === selected;
+        const label = d.specialty.length > 25 ? `${d.specialty.slice(0, 25)}…` : d.specialty;
+        return <g key={d.specialty} className="bar-row" role="button" tabIndex={0} aria-label={`${d.specialty}: ${rankFormat(metric, rankValue(d, metric))}`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)}>
+          <text x={m.left - 10} y={yy + step * .34} textAnchor="end" className="state-label">{label}</text>
+          <rect x={m.left} y={yy} width={Math.max(2, x(rankValue(d, metric)) - m.left)} height={step * .52} className={active ? 'rank-bar active' : 'rank-bar'}/>
+          <text x={Math.min(width - 4, x(rankValue(d, metric)) + 8)} y={yy + step * .34} className="value-label">{rankFormat(metric, rankValue(d, metric))}</text>
+        </g>;
+      })}
+    </svg>
+  </figure>;
+}
+
+export function CategorySharePlot({ specialties, selected, onSelect }: { specialties: Specialty[]; selected: string; onSelect: (value: string) => void }) {
+  const width = 760, height = 470;
+  const m = { top: 28, right: 45, bottom: 42, left: 188 };
+  const rows = [...specialties].filter((d) => d.opioidShare > 0 || d.antibioticShare > 0).sort((a, b) => Math.max(b.opioidShare, b.antibioticShare) - Math.max(a.opioidShare, a.antibioticShare)).slice(0, 12);
+  const max = Math.max(1, ...rows.flatMap((d) => [d.opioidShare, d.antibioticShare]));
+  const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
+  const step = (height - m.top - m.bottom) / rows.length;
+  return <figure className="chart-panel mini-chart">
+    <div className="figure-head"><div><span className="figure-no">03</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Opioid and antibiotic claim shares by specialty">
+      <g className="dot-legend" transform={`translate(${m.left},11)`}><circle r="5" className="category-dot opioid"/><text x="10" y="4">OPIOID</text><circle cx="83" r="5" className="category-dot antibiotic"/><text x="93" y="4">ANTIBIOTIC</text></g>
+      {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{oneDecimal.format(tick)}%</text></g>)}
+      {rows.map((d, i) => {
+        const yy = m.top + i * step + step / 2;
+        const active = d.specialty === selected;
+        const label = d.specialty.length > 25 ? `${d.specialty.slice(0, 25)}…` : d.specialty;
+        return <g key={d.specialty} className={active ? 'share-row active' : 'share-row'} role="button" tabIndex={0} aria-label={`${d.specialty}: ${oneDecimal.format(d.opioidShare)} percent opioid, ${oneDecimal.format(d.antibioticShare)} percent antibiotic`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)}>
+          <text x={m.left - 10} y={yy + 4} textAnchor="end" className="state-label">{label}</text>
+          <line x1={x(Math.min(d.opioidShare, d.antibioticShare))} x2={x(Math.max(d.opioidShare, d.antibioticShare))} y1={yy} y2={yy} className="share-link"/>
+          <circle cx={x(d.opioidShare)} cy={yy} r={active ? 7 : 5.5} className="category-dot opioid"/>
+          <circle cx={x(d.antibioticShare)} cy={yy} r={active ? 7 : 5.5} className="category-dot antibiotic"/>
+        </g>;
+      })}
+    </svg>
   </figure>;
 }
 
@@ -69,7 +127,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
   const fmt = metricFormatter(metric);
   const tile = 49, gap = 5, originX = 38, originY = 36;
   return <figure className="chart-panel tile-map-panel">
-    <div className="figure-head"><div><span className="figure-no">FIG. 02</span><h2>Where the measure changes</h2></div><p>Equal-area tiles make small states and territories selectable. Color is binned from the lowest to highest reported aggregate.</p></div>
+    <div className="figure-head"><div><span className="figure-no">04</span><h2>State and territory values</h2></div><p>Equal-area tiles keep small places clickable. Color is binned from low to high.</p></div>
     <div className="map-readout" aria-live="polite"><span>{active.name.toUpperCase()}</span><strong>{fmt(activeValue)}</strong><em>{Math.abs(delta).toFixed(1)}% {delta >= 0 ? 'above' : 'below'} the national specialty aggregate</em></div>
     <svg viewBox="0 0 780 490" role="img" aria-label={`Tile map of ${metricTitle(metric)} for ${profile.specialty}`}>
       {stateTiles.map(([code, col, row]) => {
@@ -95,7 +153,7 @@ export function StateComparison({ profile, metric }: { profile: SpecialtyProfile
   const step = (height - m.top - m.bottom) / states.length;
   const formatter = metricFormatter(metric);
   return <figure className="chart-panel compact-chart">
-    <div className="figure-head"><div><span className="figure-no">FIG. 03</span><h2>{profile.specialty}: state variation</h2></div><p>Top 15 states or territories for the selected measure. Values are aggregates, not quality scores.</p></div>
+    <div className="figure-head"><div><span className="figure-no">05</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`State comparison for ${profile.specialty}`}>
       {x.ticks(5).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{formatter(tick)}</text></g>)}
       {states.map((d, i) => { const yy = m.top + i * step + step / 2; return <g key={d.code}><text x={m.left - 12} y={yy + 4} textAnchor="end" className="state-label">{d.name}</text><line x1={m.left} x2={x(value(d))} y1={yy} y2={yy} className="stem"/><circle cx={x(value(d))} cy={yy} r="5.5" className="state-dot"/><text x={x(value(d)) + 11} y={yy + 4} className="value-label">{formatter(value(d))}</text></g>; })}

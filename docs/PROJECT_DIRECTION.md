@@ -51,4 +51,4 @@ CMS states that the dataset covers Medicare Part D activity, not a provider's co
 
 ## Course repository structure
 
-The site is organized as one repository with a reproducible data preparation script, reusable D3 chart components, three coordinated routes, and an included GitHub Pages deployment workflow. This satisfies the technical portion of the Week 1 repository setup brief while keeping the final repository and Pages URLs tied to the student's own GitHub account.
+The site is organized as one repository with a reproducible data preparation script, reusable D3 chart components, three coordinated routes, and an included GitHub Pages deployment workflow. The live explorer and chart source sit in `src/assignments/week-01`, the data lab sits in `src/assignments/week-02`, and the assignment index drives the site navigation. The local history descends from Curran's starter so it can be pushed onto a GitHub-created fork without rewriting the branch.

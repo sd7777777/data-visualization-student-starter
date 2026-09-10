@@ -20,10 +20,14 @@ app/
   coursework/page.tsx       Canvas brief crosswalk and task analysis
   globals.css               Shared visual theme and typography
 components/
-  analysis-charts.tsx       Reusable D3 visualization components
   site-header.tsx           Shared navigation
 lib/
   prescriber.ts             Shared data types and formatters
+src/assignments/
+  index.ts                  Starter-style assignment registry
+  week-01/                  Live explorer and D3 visualizations
+  week-02/                  Dataset lab assignment
+  week-03/                  First Visual export and documentation
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
@@ -66,15 +70,19 @@ The preprocessing script streams the source rather than loading the 750 MB file 
 
 For a project repository, the deployment workflow adds the repository name to exported asset paths. User sites named `username.github.io` stay at the domain root.
 
-### Canvas: Repository Setup
+### Canvas: Repository Setup and starter fork
 
-The attached Week 1 brief asks for a single course repository, an edited front-end, a working GitHub Pages URL, and a short screenshot/link/write-up shared in Discord and Canvas. This project contains the edited front-end and the Pages workflow. After publishing through GitHub Desktop, submit:
+The attached Week 1 brief asks for a fork of [Curran's student starter](https://github.com/curran/data-visualization-student-starter), a modified `src/assignments/week-01`, a working GitHub Pages URL, and a short screenshot/link/write-up shared in Discord and Canvas. The live explorer and D3 source now reside in that required directory, later assignments have their own directories, and `src/assignments/index.ts` is the assignment registry.
+
+The local Git branch also contains the starter's upstream history. This means it can be pushed as a fast-forward update after you create the actual fork on GitHub. The visible “forked from” badge can only be created by GitHub, so do not publish this as an unrelated new repository if that relationship is being graded. See `docs/STARTER_FORK_HANDOFF.md` for the exact handoff.
+
+After connecting this branch to your fork and enabling Pages, submit:
 
 1. Your GitHub repository URL.
 2. The GitHub Pages URL created by the workflow.
 3. A screenshot and brief description of the interactive Medicare Part D analysis.
 
-The site does not invent the first two URLs because they depend on your GitHub account and repository name.
+The site does not invent the first two URLs because they depend on your GitHub account and fork name.
 
 ## Data interpretation
 

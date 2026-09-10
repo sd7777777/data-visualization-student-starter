@@ -4,7 +4,7 @@ import { median } from 'd3-array';
 import { scaleLinear, scaleLog, scaleQuantize, scaleSqrt } from 'd3-scale';
 import type { Specialty, SpecialtyProfile } from '@/lib/prescriber';
 
-type Lens = 'economics' | 'categories';
+export type Lens = 'economics' | 'categories';
 const short = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const oneDecimal = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });

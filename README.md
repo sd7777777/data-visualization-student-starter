@@ -8,6 +8,7 @@ An interactive, one-page exploration of 2024 Medicare Part D prescriber patterns
 - Uses D3 scales and SVG for 12 views covering relationships, concentration, composition, clinical mix, geography, distributions, field types, and missingness.
 - Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
 - Keeps every public visualization and control on one page.
+- Ends with six visualization-independent analytical tasks that guide later design decisions.
 - Exports as a static site compatible with GitHub Pages.
 
 ## Project map

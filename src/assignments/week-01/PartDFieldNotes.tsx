@@ -59,7 +59,7 @@ export default function PartDFieldNotes() {
       <div className="stat-strip" aria-label="Dataset overview"><div><span>Provider records</span><strong>{area.summary.providers.toLocaleString()}</strong></div><div><span>Claims</span><strong>{compact.format(area.summary.claims)}</strong></div><div><span>Drug cost</span><strong>{money.format(area.summary.cost)}</strong></div><div><span>Source fields</span><strong>{data.meta.columns}</strong></div><div><span>Browser file</span><strong>608 KB</strong></div></div>
     </section>
 
-    <nav className="section-directory" aria-label="Explorer sections"><span>project extensions:</span><a href="#scale">scale</a><a href="#composition">composition</a><a href="#mix">clinical mix</a><a href="#place">geography</a><a href="#records">records</a><a href="#data">data quality</a></nav>
+    <nav className="section-directory" aria-label="Explorer sections"><span>project extensions:</span><a href="#scale">scale</a><a href="#composition">composition</a><a href="#mix">clinical mix</a><a href="#place">geography</a><a href="#records">records</a><a href="#data">data quality</a><a href="#task-analysis">task analysis</a></nav>
 
     <section id="week-3" className="section-wrap">
       <div className="story-question assignment-question"><b>WEEK 03 / FIRST VISUAL</b><h2>How do price and prescribing volume relate?</h2><p>First data-to-graphics view from the Canvas assignment.</p></div>
@@ -115,6 +115,18 @@ export default function PartDFieldNotes() {
       <div className="small-multiples"><DistributionHistogram data={data} active={distribution}/><FieldTypeBars data={data}/></div>
       <div className="single-chart"><FieldMissingnessPlot data={data}/></div>
       <p className="data-note"><a href="./data/prescriber-summary/README.md">Dataset documentation</a> · <a href="./data/prescriber-summary/summary.json">Browser-ready JSON</a></p>
+    </section>
+
+    <section id="task-analysis" className="section-wrap task-analysis">
+      <div className="task-analysis-head"><span>PROJECT PLANNING</span><h2>Task Analysis</h2><p>Questions the explorer should help answer, independent of any particular chart form.</p></div>
+      <ol className="task-list">
+        <li><b>01</b><div><h3>Examine relationships</h3><p>Determine whether prescribing volume and cost move together, then identify specialties that depart from the overall pattern.</p></div></li>
+        <li><b>02</b><div><h3>Assess concentration</h3><p>Identify which specialties account for the largest shares of claims and drug cost, and judge how concentrated those totals are.</p></div></li>
+        <li><b>03</b><div><h3>Compare clinical mix</h3><p>Compare reported drug-category shares across specialties and find unusually high, low, or contrasting patterns.</p></div></li>
+        <li><b>04</b><div><h3>Compare places</h3><p>Determine how a selected specialty varies across states and identify places that differ meaningfully from the national benchmark.</p></div></li>
+        <li><b>05</b><div><h3>Investigate records</h3><p>Find high-cost provider records and distinguish whether their totals are associated with claim volume, cost per claim, or specialty.</p></div></li>
+        <li><b>06</b><div><h3>Judge data fitness</h3><p>Assess field types, missingness, suppression, and distributions before deciding which comparisons the data can support.</p></div></li>
+      </ol>
     </section>
 
     <footer><p>Part D records cover prescriptions paid under the program, not a clinician’s full practice. Drug cost excludes manufacturer rebates.</p><div><a href="./downloads/part-d-prescriber-source.zip" download>Download site files (.zip)</a><a href="https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/medicare-part-d-prescribers-by-provider" target="_blank" rel="noreferrer">CMS source</a></div></footer>

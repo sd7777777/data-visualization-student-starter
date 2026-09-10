@@ -12,12 +12,12 @@ const oneDecimal = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, ma
 export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { specialties: Specialty[]; selected: string; onSelect: (value: string) => void; lens: Lens }) {
   const width = 900, height = 510;
   const m = { top: 30, right: 26, bottom: 62, left: 76 };
-  const xValue = (d: Specialty) => lens === 'economics' ? d.costPerClaim : Math.max(d.opioidShare, .01);
-  const yValue = (d: Specialty) => lens === 'economics' ? d.claims / d.providers : Math.max(d.antibioticShare, .01);
+  const xValue = (d: Specialty) => lens === 'economics' ? d.costPerClaim : d.opioidShare;
+  const yValue = (d: Specialty) => lens === 'economics' ? d.claims / d.providers : d.antibioticShare;
   const xDomain = [Math.min(...specialties.map(xValue)), Math.max(...specialties.map(xValue))] as [number, number];
   const yDomain = [Math.min(...specialties.map(yValue)), Math.max(...specialties.map(yValue))] as [number, number];
-  const x = scaleLog().domain(xDomain).nice().range([m.left, width - m.right]);
-  const y = scaleLog().domain(yDomain).nice().range([height - m.bottom, m.top]);
+  const x = lens === 'economics' ? scaleLog().domain(xDomain).nice().range([m.left, width - m.right]) : scaleLinear().domain([0, xDomain[1]]).nice().range([m.left, width - m.right]);
+  const y = lens === 'economics' ? scaleLog().domain(yDomain).nice().range([height - m.bottom, m.top]) : scaleLinear().domain([0, yDomain[1]]).nice().range([height - m.bottom, m.top]);
   const r = scaleSqrt().domain([0, Math.max(...specialties.map((d) => d.providers))]).range([4, 22]);
   const xTicks = x.ticks(6).filter((tick) => tick >= x.domain()[0] && tick <= x.domain()[1]);
   const yTicks = y.ticks(6).filter((tick) => tick >= y.domain()[0] && tick <= y.domain()[1]);
@@ -26,7 +26,7 @@ export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { sp
   const label = lens === 'economics' ? (v: number) => `$${short.format(v)}` : (v: number) => `${oneDecimal.format(v)}%`;
   const selectedDatum = specialties.find((d) => d.specialty === selected);
   return <figure className="chart-panel">
-    <div className="figure-head"><div><span className="figure-no">01</span><h2>{lens === 'economics' ? 'Cost per claim vs. claims per provider' : 'Opioid vs. antibiotic claim share'}</h2></div><p>One circle per specialty. Circle area shows provider records. Axes use log scales.</p></div>
+    <div className="figure-head"><div><span className="figure-no">01</span><h2>{lens === 'economics' ? 'Cost per claim vs. claims per provider' : 'Opioid vs. antibiotic claim share'}</h2></div><p>One circle per specialty. Circle area shows provider records. {lens === 'economics' ? 'Axes use log scales.' : 'Axes begin at zero.'}</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="scatter-title scatter-desc" className="scatter">
       <title id="scatter-title">Specialty comparison scatter plot</title><desc id="scatter-desc">Interactive scatter plot of the highest-cost specialties in the selected geography.</desc>
       {xTicks.map((tick) => <g key={`x-${tick}`}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{label(tick)}</text></g>)}
@@ -38,7 +38,7 @@ export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { sp
       <text x={(m.left + width - m.right) / 2} y={height - 13} textAnchor="middle" className="axis-label">{lens === 'economics' ? 'TOTAL DRUG COST / CLAIM →' : 'REPORTED OPIOID CLAIM SHARE →'}</text>
       <text transform={`translate(18 ${(m.top + height - m.bottom) / 2}) rotate(-90)`} textAnchor="middle" className="axis-label">{lens === 'economics' ? 'CLAIMS / PROVIDER →' : 'REPORTED ANTIBIOTIC CLAIM SHARE →'}</text>
     </svg>
-    <figcaption>Source: CMS Medicare Part D Prescribers by Provider, 2024. Category shares omit suppressed values.</figcaption>
+    <figcaption>Source: CMS Medicare Part D Prescribers by Provider, 2024. {lens === 'economics' ? 'Both axes use logarithmic scales.' : 'Axes begin at zero; suppressed category values are unavailable.'}</figcaption>
   </figure>;
 }
 
@@ -125,9 +125,10 @@ export function CostProviderBalance({ specialties, totalCost, totalProviders, se
   return <figure className="chart-panel mini-chart balance-chart">
     <div className="figure-head"><div><span className="figure-no">05</span><h2>Cost share minus provider share</h2></div><p>Positive values account for more drug cost than provider records; negative values account for less.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Difference between drug cost share and provider record share by specialty">
+      {x.ticks(5).map((tick) => <line key={`grid-${tick}`} x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/>)}
       <line x1={x(0)} x2={x(0)} y1={m.top} y2={height - m.bottom} className="zero-line"/>
       {x.ticks(5).map((tick) => <text key={tick} x={x(tick)} y={height - 17} textAnchor="middle" className="tick">{tick > 0 ? '+' : ''}{oneDecimal.format(tick)}pp</text>)}
-      {rows.map(({ datum, delta }, i) => { const yy = m.top + i * step + step * .2; const start = Math.min(x(0), x(delta)); return <g key={datum.specialty} className="bar-row" role="button" tabIndex={0} onMouseEnter={() => onSelect(datum.specialty)} onFocus={() => onSelect(datum.specialty)} onClick={() => onSelect(datum.specialty)} aria-label={`${datum.specialty}: ${oneDecimal.format(delta)} percentage points`}><text x={m.left - 10} y={yy + step * .32} textAnchor="end" className="state-label">{datum.specialty.length > 25 ? `${datum.specialty.slice(0,25)}…` : datum.specialty}</text><rect x={start} y={yy} width={Math.max(2, Math.abs(x(delta) - x(0)))} height={step * .5} className={`${delta >= 0 ? 'balance-bar positive' : 'balance-bar negative'}${datum.specialty === selected ? ' active' : ''}`}/></g>; })}
+      {rows.map(({ datum, delta }, i) => { const yy = m.top + i * step + step * .2; const start = Math.min(x(0), x(delta)); return <g key={datum.specialty} className="bar-row" role="button" tabIndex={0} onMouseEnter={() => onSelect(datum.specialty)} onFocus={() => onSelect(datum.specialty)} onClick={() => onSelect(datum.specialty)} aria-label={`${datum.specialty}: ${oneDecimal.format(delta)} percentage points`}><text x={m.left - 10} y={yy + step * .32} textAnchor="end" className="state-label">{datum.specialty.length > 25 ? `${datum.specialty.slice(0,25)}…` : datum.specialty}</text><rect x={start} y={yy} width={Math.max(2, Math.abs(x(delta) - x(0)))} height={step * .5} className={`${delta >= 0 ? 'balance-bar positive' : 'balance-bar negative'}${datum.specialty === selected ? ' active' : ''}`}/><text x={x(delta)+(delta>=0?6:-6)} y={yy+step*.32} textAnchor={delta>=0?'start':'end'} className="value-label">{delta>0?'+':''}{oneDecimal.format(delta)}</text></g>; })}
       <text x={m.left} y={height - 2} className="axis-label">← LOWER COST SHARE</text><text x={width - m.right} y={height - 2} textAnchor="end" className="axis-label">HIGHER COST SHARE →</text>
     </svg>
   </figure>;
@@ -140,6 +141,7 @@ export function CategorySharePlot({ specialties, selected, onSelect }: { special
   const max = Math.max(1, ...rows.flatMap((d) => [d.opioidShare, d.antibioticShare]));
   const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / rows.length;
+  const selectedDatum = specialties.find((d) => d.specialty === selected) ?? specialties[0];
   return <figure className="chart-panel mini-chart">
     <div className="figure-head"><div><span className="figure-no">06</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Opioid and antibiotic claim shares by specialty">
@@ -157,6 +159,7 @@ export function CategorySharePlot({ specialties, selected, onSelect }: { special
         </g>;
       })}
     </svg>
+    <figcaption><b>{selectedDatum.specialty}:</b> {oneDecimal.format(selectedDatum.opioidShare)}% opioid · {oneDecimal.format(selectedDatum.antibioticShare)}% antibiotic.</figcaption>
   </figure>;
 }
 
@@ -226,7 +229,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
           <rect width={tile} height={tile} rx="1" fill={isActive ? '#e6532f' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
         </g>;
       })}
-      <g transform="translate(38,455)"><text className="legend-label" y="10">LOW</text>{color.range().map((swatch, i) => <rect key={swatch} x={38 + i * 34} width="34" height="12" fill={swatch}/>)}<text className="legend-label" x="218" y="10">HIGH</text><text className="legend-label" x="310" y="10">{metricTitle(metric).toUpperCase()}</text></g>
+      <g transform="translate(38,455)"><text className="legend-label" y="10">{fmt(min)}</text>{color.range().map((swatch, i) => <rect key={swatch} x={48 + i * 34} width="34" height="12" fill={swatch}/>)}<text className="legend-label" x="224" y="10">{fmt(max)}</text><text className="legend-label" x="315" y="10">{metricTitle(metric).toUpperCase()}</text></g>
     </svg>
     <figcaption>Tile position is schematic. Armed Forces and foreign/unknown records are excluded from the map but remain in national totals.</figcaption>
   </figure>;
@@ -237,13 +240,15 @@ export function StateComparison({ profile, metric }: { profile: SpecialtyProfile
   const m = { top: 22, right: 38, bottom: 60, left: 132 };
   const value = (d: SpecialtyProfile['states'][number]) => metricValue(d, metric);
   const states = [...profile.states].sort((a, b) => value(b) - value(a)).slice(0, 15);
-  const x = scaleLinear().domain([0, Math.max(...states.map(value))]).nice().range([m.left, width - m.right]);
+  const nationalValue = metricValue(profile.national, metric);
+  const x = scaleLinear().domain([0, Math.max(nationalValue, ...states.map(value))]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / states.length;
   const formatter = metricFormatter(metric);
   return <figure className="chart-panel compact-chart">
     <div className="figure-head"><div><span className="figure-no">09</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`State comparison for ${profile.specialty}`}>
       {x.ticks(5).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{formatter(tick)}</text></g>)}
+      <line x1={x(nationalValue)} x2={x(nationalValue)} y1={m.top} y2={height-m.bottom} className="national-line"/><text x={x(nationalValue)+5} y={m.top+10} className="national-label">US {formatter(nationalValue)}</text>
       {states.map((d, i) => { const yy = m.top + i * step + step / 2; return <g key={d.code}><text x={m.left - 12} y={yy + 4} textAnchor="end" className="state-label">{d.name}</text><line x1={m.left} x2={x(value(d))} y1={yy} y2={yy} className="stem"/><circle cx={x(value(d))} cy={yy} r="5.5" className="state-dot"/><text x={x(value(d)) + 11} y={yy + 4} className="value-label">{formatter(value(d))}</text></g>; })}
       <text x={(m.left + width - m.right) / 2} y={height - 12} textAnchor="middle" className="axis-label">{metric === 'costPerClaim' ? 'TOTAL DRUG COST / CLAIM' : metric === 'opioidShare' ? 'REPORTED OPIOID CLAIM SHARE' : 'CLAIMS / PROVIDER'}</text>
     </svg>
@@ -274,11 +279,27 @@ export function FieldMissingnessPlot({ data }: { data: Dataset }) {
   const x = scaleLinear().domain([0,100]).range([m.left,width-m.right]);
   const step = (height-m.top-m.bottom)/rows.length;
   return <figure className="chart-panel mini-chart missingness-chart">
-    <div className="figure-head"><div><span className="figure-no">11</span><h2>Fields with the most blanks</h2></div><p>Blank-cell rate for the 12 least complete fields. Orange dots show suppression-marker rate.</p></div>
+    <div className="figure-head"><div><span className="figure-no">12</span><h2>Fields with the most blanks</h2></div><p>Blank-cell rate for the 12 least complete fields. Orange dots show suppression-marker rate.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="CMS fields with the highest blank rates">
       {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height-m.bottom} className="gridline"/><text x={x(tick)} y={height-18} textAnchor="middle" className="tick">{tick}%</text></g>)}
-      {rows.map((field,i) => { const yy=m.top+i*step+step*.22; const markerRate=field.markers/data.meta.rows*100; return <g key={field.name}><text x={m.left-10} y={yy+step*.31} textAnchor="end" className="field-label">{field.name}</text><rect x={m.left} y={yy} width={Math.max(2,x(field.missingRate)-m.left)} height={step*.48} className="missing-bar"/><circle cx={x(markerRate)} cy={yy+step*.24} r="4.5" className="marker-dot"/><text x={Math.min(width-4,x(field.missingRate)+8)} y={yy+step*.31} className="value-label">{oneDecimal.format(field.missingRate)}%</text></g>; })}
+      {rows.map((field,i) => { const yy=m.top+i*step+step*.22; const markerRate=field.markers/data.meta.rows*100; const label=field.label.length>27?`${field.label.slice(0,27)}…`:field.label; return <g key={field.name}><text x={m.left-10} y={yy+step*.31} textAnchor="end" className="field-label">{label}</text><rect x={m.left} y={yy} width={Math.max(2,x(field.missingRate)-m.left)} height={step*.48} className="missing-bar"/><circle cx={x(markerRate)} cy={yy+step*.24} r="4.5" className="marker-dot"/><text x={Math.min(width-4,x(field.missingRate)+8)} y={yy+step*.31} className="value-label">{oneDecimal.format(field.missingRate)}%</text></g>; })}
       <text x={(m.left+width-m.right)/2} y={height-2} textAnchor="middle" className="axis-label">SHARE OF PROVIDER RECORDS →</text>
+    </svg>
+  </figure>;
+}
+
+export function FieldTypeBars({ data }: { data: Dataset }) {
+  const width=760, height=410;
+  const m={top:30,right:48,bottom:52,left:175};
+  const counts=Array.from(data.schema.reduce((map,field)=>map.set(field.classification,(map.get(field.classification)??0)+1),new Map<string,number>())).sort((a,b)=>b[1]-a[1]);
+  const x=scaleLinear().domain([0,Math.max(...counts.map(([,count])=>count))]).nice().range([m.left,width-m.right]);
+  const step=(height-m.top-m.bottom)/counts.length;
+  return <figure className="chart-panel mini-chart field-types-chart">
+    <div className="figure-head"><div><span className="figure-no">11</span><h2>Field classification</h2></div><p>All {data.meta.columns} source attributes classified for the Week 2 dataset documentation.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Count of CMS fields by attribute classification">
+      {x.ticks(6).map((tick)=><g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height-m.bottom} className="gridline"/><text x={x(tick)} y={height-18} textAnchor="middle" className="tick">{tick}</text></g>)}
+      {counts.map(([label,count],i)=>{const yy=m.top+i*step+step*.22;return <g key={label}><text x={m.left-12} y={yy+step*.34} textAnchor="end" className="field-type-label">{label}</text><rect x={m.left} y={yy} width={x(count)-m.left} height={step*.52} className={i%2===0?'field-type-bar primary':'field-type-bar secondary'}/><text x={x(count)+9} y={yy+step*.34} className="field-type-count">{count}</text></g>;})}
+      <text x={(m.left+width-m.right)/2} y={height-2} textAnchor="middle" className="axis-label">NUMBER OF FIELDS →</text>
     </svg>
   </figure>;
 }

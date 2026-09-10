@@ -1,5 +1,5 @@
 # Week 02 - Load & Summarize a Dataset
 
-`DataLab.tsx` implements the Load & Summarize assignment. It exposes the dataset dimensions, three full-file distributions, suppression-marker totals, and a searchable classification of all 84 attributes.
+The public page's `#week-2` and `#data` sections implement the Load & Summarize assignment. They expose the dataset dimensions, full-file distributions, suppression markers, missingness, and a classification of all 84 attributes.
 
-The root `app/lab/page.tsx` is a thin route wrapper so this assignment remains directly addressable in the hosted portfolio.
+`DataLab.tsx` retains the detailed searchable field-inventory component as reusable assignment source. The browser-ready data and its documentation live in `public/data/prescriber-summary/`.

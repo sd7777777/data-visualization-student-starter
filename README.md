@@ -5,7 +5,7 @@ An interactive, one-page exploration of 2024 Medicare Part D prescriber patterns
 ## Current milestone
 
 - Streams 1,416,883 provider records into a 608 KB browser-ready analysis file.
-- Uses D3 scales and SVG for 11 views covering relationships, concentration, composition, clinical mix, geography, distributions, and missingness.
+- Uses D3 scales and SVG for 12 views covering relationships, concentration, composition, clinical mix, geography, distributions, field types, and missingness.
 - Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
 - Keeps every public visualization and control on one page.
 - Exports as a static site compatible with GitHub Pages.
@@ -36,6 +36,13 @@ docs/
 ```
 
 The public site is one page. Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
+
+## Canvas assignment map
+
+- **Week 1 — Repository Setup:** the page shell, starter-compatible source structure, downloadable files, and GitHub Pages workflow.
+- **Week 2 — Load & Summarize a Dataset:** the dataset strip near the top and the data-quality section, including row/column counts, attribute classifications, distributions, missingness, browser-ready JSON, and dataset README.
+- **Week 3 — First Visual:** Figure 01, an interactive D3 scatterplot connecting specialty-level prescribing volume with cost or reported drug-category share.
+- **Project extensions:** Figures 02–12 continue the same dataset story. They are labeled separately so they are not confused with the three graded milestones.
 
 ## Work locally
 

@@ -47,6 +47,6 @@ export default function DataLab() {
       </div>
       {fields.length === 0 && <p>No fields match this filter.</p>}
     </section>
-    <footer><p>The repository includes the Python preparation script, browser-ready JSON, and generation notes.</p><div><a href="./coursework">Methods</a><a href="./">Explorer</a></div></footer>
+    <footer><p>The repository includes the Python preparation script, browser-ready JSON, and generation notes.</p><div><a href="./#week-3">First visual</a><a href="./">Explorer</a></div></footer>
   </main>;
 }

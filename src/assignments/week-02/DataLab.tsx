@@ -11,7 +11,7 @@ function Histogram({ data, active }: { data: Dataset; active: string }) {
   const max = Math.max(...distribution.bins.map((d) => d.count));
   const y = scaleLog().domain([1, max]).range([2, 225]);
   return <figure className="histogram">
-    <div className="figure-head"><div><span className="figure-no">06</span><h2>{distribution.label}</h2></div><p>All provider records. Bar height uses a log scale so the long tail remains visible.</p></div>
+    <div className="figure-head"><div><span className="figure-no">08</span><h2>{distribution.label}</h2></div><p>All provider records. Bar height uses a log scale so the long tail remains visible.</p></div>
     <div className="histogram-bars">{distribution.bins.map((bin) => <div className="hist-bar" key={bin.label}><b>{compact.format(bin.count)}</b><i style={{ height: y(Math.max(1, bin.count)) }}/><span>{bin.label}</span></div>)}</div>
     <figcaption>n = {data.meta.rows.toLocaleString()} provider records. Zero and missing totals fall into the first applicable bin.</figcaption>
   </figure>;

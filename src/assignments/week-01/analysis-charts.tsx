@@ -43,6 +43,7 @@ export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { sp
 }
 
 export type RankMetric = 'cost' | 'claims' | 'providers';
+export type ConcentrationMetric = 'cost' | 'claims';
 
 const rankValue = (d: Specialty, metric: RankMetric) => d[metric];
 const rankTitle = (metric: RankMetric) => metric === 'cost' ? 'Total drug cost' : metric === 'claims' ? 'Total claims' : 'Provider records';
@@ -56,7 +57,7 @@ export function SpecialtyRanking({ specialties, metric, selected, onSelect }: { 
   const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / rows.length;
   return <figure className="chart-panel mini-chart">
-    <div className="figure-head"><div><span className="figure-no">02</span><h2>Largest specialties</h2></div><p>Top 12 in the selected geography by {rankTitle(metric).toLowerCase()}.</p></div>
+    <div className="figure-head"><div><span className="figure-no">03</span><h2>Largest specialties</h2></div><p>Top 12 in the selected geography by {rankTitle(metric).toLowerCase()}.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${rankTitle(metric)} by specialty`}>
       {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{rankFormat(metric, tick)}</text></g>)}
       {rows.map((d, i) => {
@@ -73,6 +74,31 @@ export function SpecialtyRanking({ specialties, metric, selected, onSelect }: { 
   </figure>;
 }
 
+export function ConcentrationCurve({ specialties, metric, selected, onSelect }: { specialties: Specialty[]; metric: ConcentrationMetric; selected: string; onSelect: (value: string) => void }) {
+  const width = 760, height = 470;
+  const m = { top: 28, right: 34, bottom: 52, left: 65 };
+  const rows = [...specialties].sort((a, b) => b[metric] - a[metric]);
+  const total = rows.reduce((sum, d) => sum + d[metric], 0);
+  const points = rows.map((d, i) => ({ datum: d, rank: i + 1, share: rows.slice(0, i + 1).reduce((sum, item) => sum + item[metric], 0) / total }));
+  const x = scaleLinear().domain([0, rows.length]).range([m.left, width - m.right]);
+  const y = scaleLinear().domain([0, 1]).range([height - m.bottom, m.top]);
+  const line = [`M${x(0)},${y(0)}`, ...points.map((d) => `L${x(d.rank)},${y(d.share)}`)].join(' ');
+  const area = `${line} L${x(rows.length)},${y(0)} Z`;
+  const top5 = points[Math.min(4, points.length - 1)]?.share ?? 0;
+  const top10 = points[Math.min(9, points.length - 1)]?.share ?? 0;
+  return <figure className="chart-panel mini-chart concentration-chart">
+    <div className="figure-head"><div><span className="figure-no">02</span><h2>Cumulative specialty share</h2></div><p>Specialties ordered from largest to smallest by {metric === 'cost' ? 'total drug cost' : 'claims'}.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Cumulative share of ${metric} by specialty`}>
+      {[0,.25,.5,.75,1].map((tick) => <g key={tick}><line x1={m.left} x2={width - m.right} y1={y(tick)} y2={y(tick)} className="gridline"/><text x={m.left - 10} y={y(tick) + 4} textAnchor="end" className="tick">{Math.round(tick * 100)}%</text></g>)}
+      {x.ticks(5).map((tick) => <text key={tick} x={x(tick)} y={height - 22} textAnchor="middle" className="tick">{tick}</text>)}
+      <path d={area} className="concentration-area"/><path d={line} className="concentration-line"/>
+      {points.map((point) => <circle key={point.datum.specialty} cx={x(point.rank)} cy={y(point.share)} r={point.datum.specialty === selected ? 6 : 3} className={point.datum.specialty === selected ? 'curve-point active' : 'curve-point'} tabIndex={0} role="button" aria-label={`${point.datum.specialty}: cumulative ${Math.round(point.share * 100)} percent at rank ${point.rank}`} onMouseEnter={() => onSelect(point.datum.specialty)} onFocus={() => onSelect(point.datum.specialty)} onClick={() => onSelect(point.datum.specialty)}/>) }
+      <text x={(m.left + width - m.right) / 2} y={height - 5} textAnchor="middle" className="axis-label">NUMBER OF SPECIALTIES INCLUDED →</text>
+    </svg>
+    <figcaption><b>Top 5:</b> {Math.round(top5 * 100)}% · <b>Top 10:</b> {Math.round(top10 * 100)}% of {metric === 'cost' ? 'drug cost' : 'claims'}.</figcaption>
+  </figure>;
+}
+
 export function CategorySharePlot({ specialties, selected, onSelect }: { specialties: Specialty[]; selected: string; onSelect: (value: string) => void }) {
   const width = 760, height = 470;
   const m = { top: 28, right: 45, bottom: 42, left: 188 };
@@ -81,7 +107,7 @@ export function CategorySharePlot({ specialties, selected, onSelect }: { special
   const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / rows.length;
   return <figure className="chart-panel mini-chart">
-    <div className="figure-head"><div><span className="figure-no">03</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
+    <div className="figure-head"><div><span className="figure-no">04</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Opioid and antibiotic claim shares by specialty">
       <g className="dot-legend" transform={`translate(${m.left},11)`}><circle r="5" className="category-dot opioid"/><text x="10" y="4">OPIOID</text><circle cx="83" r="5" className="category-dot antibiotic"/><text x="93" y="4">ANTIBIOTIC</text></g>
       {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{oneDecimal.format(tick)}%</text></g>)}
@@ -96,6 +122,34 @@ export function CategorySharePlot({ specialties, selected, onSelect }: { special
           <circle cx={x(d.antibioticShare)} cy={yy} r={active ? 7 : 5.5} className="category-dot antibiotic"/>
         </g>;
       })}
+    </svg>
+  </figure>;
+}
+
+export function SpecialtyFingerprint({ specialties, selected }: { specialties: Specialty[]; selected: string }) {
+  const datum = specialties.find((d) => d.specialty === selected) ?? specialties[0];
+  const metrics = [
+    { label: 'Total drug cost', value: (d: Specialty) => d.cost, format: (v: number) => `$${short.format(v)}` },
+    { label: 'Cost / claim', value: (d: Specialty) => d.costPerClaim, format: (v: number) => `$${whole.format(v)}` },
+    { label: 'Claims / provider', value: (d: Specialty) => d.claims / d.providers, format: (v: number) => whole.format(v) },
+    { label: 'Provider records', value: (d: Specialty) => d.providers, format: (v: number) => short.format(v) },
+    { label: 'Opioid share', value: (d: Specialty) => d.opioidShare, format: (v: number) => `${oneDecimal.format(v)}%` },
+  ];
+  const width = 760, height = 365;
+  const m = { top: 24, right: 55, bottom: 42, left: 180 };
+  const x = scaleLinear().domain([0,100]).range([m.left,width - m.right]);
+  const step = (height - m.top - m.bottom) / metrics.length;
+  const ranked = metrics.map((metric) => {
+    const raw = metric.value(datum);
+    const percentile = specialties.filter((d) => metric.value(d) <= raw).length / specialties.length * 100;
+    return { ...metric, raw, percentile };
+  });
+  return <figure className="chart-panel mini-chart fingerprint-chart">
+    <div className="figure-head"><div><span className="figure-no">05</span><h2>{datum.specialty}</h2></div><p>Percentile among specialties in the selected geography. Farther right means higher, not better.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Percentile profile for ${datum.specialty}`}>
+      {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 15} textAnchor="middle" className="tick">{tick}th</text></g>)}
+      {ranked.map((metric, i) => { const yy = m.top + i * step + step / 2; return <g key={metric.label}><text x={m.left - 12} y={yy - 3} textAnchor="end" className="state-label">{metric.label}</text><text x={m.left - 12} y={yy + 13} textAnchor="end" className="raw-value">{metric.format(metric.raw)}</text><rect x={m.left} y={yy - 8} width={Math.max(2,x(metric.percentile)-m.left)} height="16" className={`fingerprint-bar metric-${i}`}/><circle cx={x(metric.percentile)} cy={yy} r="6" className={`fingerprint-dot metric-${i}`}/><text x={Math.min(width - 4,x(metric.percentile)+10)} y={yy + 4} className="value-label">{Math.round(metric.percentile)}th</text></g>; })}
+      <text x={(m.left + width - m.right) / 2} y={height - 2} textAnchor="middle" className="axis-label">PERCENTILE AMONG SPECIALTIES →</text>
     </svg>
   </figure>;
 }
@@ -119,7 +173,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
   const plotted = stateTiles.map(([code]) => byCode.get(code)).filter((d): d is SpecialtyProfile['states'][number] => Boolean(d));
   const values = plotted.map((d) => metricValue(d, metric));
   const min = Math.min(...values), max = Math.max(...values);
-  const color = scaleQuantize<string>().domain([min, max]).range(['#d9e4e7','#a9c6d2','#73a5b8','#36748f','#123f5a']);
+  const color = scaleQuantize<string>().domain([min, max]).range(['#e7e0ef','#cab8dc','#a387bd','#745795','#432e69']);
   const active = byCode.get(selected) ?? plotted[0];
   const activeValue = metricValue(active, metric);
   const nationalValue = metricValue(profile.national, metric);
@@ -127,7 +181,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
   const fmt = metricFormatter(metric);
   const tile = 49, gap = 5, originX = 38, originY = 36;
   return <figure className="chart-panel tile-map-panel">
-    <div className="figure-head"><div><span className="figure-no">04</span><h2>State and territory values</h2></div><p>Equal-area tiles keep small places clickable. Color is binned from low to high.</p></div>
+    <div className="figure-head"><div><span className="figure-no">06</span><h2>State and territory values</h2></div><p>Equal-area tiles keep small places clickable. Color is binned from low to high.</p></div>
     <div className="map-readout" aria-live="polite"><span>{active.name.toUpperCase()}</span><strong>{fmt(activeValue)}</strong><em>{Math.abs(delta).toFixed(1)}% {delta >= 0 ? 'above' : 'below'} the national specialty aggregate</em></div>
     <svg viewBox="0 0 780 490" role="img" aria-label={`Tile map of ${metricTitle(metric)} for ${profile.specialty}`}>
       {stateTiles.map(([code, col, row]) => {
@@ -135,7 +189,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
         const fill = datum ? color(metricValue(datum, metric)) : '#e5e7e3';
         const isActive = active.code === code;
         return <g key={code} transform={`translate(${originX + col * (tile + gap)},${originY + row * (tile + gap)})`} role="button" tabIndex={datum ? 0 : -1} aria-label={datum ? `${datum.name}: ${fmt(metricValue(datum, metric))}` : `${code}: no value`} onMouseEnter={() => datum && onSelect(code)} onFocus={() => datum && onSelect(code)} onClick={() => datum && onSelect(code)} className={datum ? 'tile-group' : 'tile-group unavailable'}>
-          <rect width={tile} height={tile} rx="1" fill={isActive ? '#db5b27' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
+          <rect width={tile} height={tile} rx="1" fill={isActive ? '#f05a28' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
         </g>;
       })}
       <g transform="translate(38,455)"><text className="legend-label" y="10">LOW</text>{color.range().map((swatch, i) => <rect key={swatch} x={38 + i * 34} width="34" height="12" fill={swatch}/>)}<text className="legend-label" x="218" y="10">HIGH</text><text className="legend-label" x="310" y="10">{metricTitle(metric).toUpperCase()}</text></g>
@@ -153,7 +207,7 @@ export function StateComparison({ profile, metric }: { profile: SpecialtyProfile
   const step = (height - m.top - m.bottom) / states.length;
   const formatter = metricFormatter(metric);
   return <figure className="chart-panel compact-chart">
-    <div className="figure-head"><div><span className="figure-no">05</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
+    <div className="figure-head"><div><span className="figure-no">07</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`State comparison for ${profile.specialty}`}>
       {x.ticks(5).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{formatter(tick)}</text></g>)}
       {states.map((d, i) => { const yy = m.top + i * step + step / 2; return <g key={d.code}><text x={m.left - 12} y={yy + 4} textAnchor="end" className="state-label">{d.name}</text><line x1={m.left} x2={x(value(d))} y1={yy} y2={yy} className="stem"/><circle cx={x(value(d))} cy={yy} r="5.5" className="state-dot"/><text x={x(value(d)) + 11} y={yy + 4} className="value-label">{formatter(value(d))}</text></g>; })}

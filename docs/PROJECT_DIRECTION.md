@@ -48,3 +48,7 @@ CMS states that the dataset covers Medicare Part D activity, not a provider's co
 - Add annotation for a small number of source-backed findings.
 - Add the student's hand-drawn exploration sketches and design notes.
 - Run keyboard, color-contrast, and mobile usability checks before final presentation.
+
+## Course repository structure
+
+The site is organized as one repository with a reproducible data preparation script, reusable D3 chart components, three coordinated routes, and an included GitHub Pages deployment workflow. This satisfies the technical portion of the Week 1 repository setup brief while keeping the final repository and Pages URLs tied to the student's own GitHub account.

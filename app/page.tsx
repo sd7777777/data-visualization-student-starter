@@ -5,11 +5,10 @@ import { ArrowDown, CircleHelp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SiteHeader } from '@/components/site-header';
-import { SpecialtyScatter, StateComparison } from '@/components/analysis-charts';
+import { SpecialtyScatter, StateComparison, StateTileMap, type Metric } from '@/components/analysis-charts';
 import { compact, dollars, money, percent, type Dataset } from '@/lib/prescriber';
 
 type Lens = 'economics' | 'categories';
-type Metric = 'costPerClaim' | 'claimsPerProvider' | 'opioidShare';
 
 export default function Home() {
   const [data, setData] = useState<Dataset | null>(null);
@@ -18,10 +17,12 @@ export default function Home() {
   const [selected, setSelected] = useState('');
   const [profileName, setProfileName] = useState('Nurse Practitioner');
   const [metric, setMetric] = useState<Metric>('costPerClaim');
+  const [selectedState, setSelectedState] = useState('CA');
   useEffect(() => { void fetch('./data/prescriber-summary/summary.json').then((r) => r.json()).then((payload) => setData(payload as Dataset)); }, []);
   const area = useMemo(() => data?.areas.find((d) => d.code === areaCode) ?? data?.areas[0], [data, areaCode]);
   const specialty = area?.specialties.find((d) => d.specialty === selected) ?? area?.specialties[0];
   const profile = data?.specialtyProfiles.find((d) => d.specialty === profileName) ?? data?.specialtyProfiles[0];
+  const activeState = profile?.states.some((d) => d.code === selectedState) ? selectedState : (profile?.states[0]?.code ?? '');
 
   useEffect(() => {
     if (!data || !document.modelContext?.registerTool) return;
@@ -69,7 +70,7 @@ export default function Home() {
         <div className="control-field"><span>SPECIALTY</span><Select value={profile.specialty} onValueChange={(v) => setProfileName(v ?? profile.specialty)}><SelectTrigger aria-label="Specialty"><SelectValue/></SelectTrigger><SelectContent>{data.specialtyProfiles.map((d) => <SelectItem key={d.specialty} value={d.specialty}>{d.specialty}</SelectItem>)}</SelectContent></Select></div>
         <div className="control-field"><span>MEASURE</span><Tabs value={metric} onValueChange={(v) => setMetric(v as Metric)}><TabsList><TabsTrigger value="costPerClaim">Cost / claim</TabsTrigger><TabsTrigger value="claimsPerProvider">Claims / provider</TabsTrigger><TabsTrigger value="opioidShare">Opioid share</TabsTrigger></TabsList></Tabs></div>
       </div>
-      <StateComparison profile={profile} metric={metric}/>
+      <div className="geography-views"><StateTileMap profile={profile} metric={metric} selected={activeState} onSelect={setSelectedState}/><StateComparison profile={profile} metric={metric}/></div>
     </section>
 
     <section className="section-wrap provider-section">

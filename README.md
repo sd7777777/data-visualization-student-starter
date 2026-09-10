@@ -5,7 +5,7 @@ An interactive portfolio project for exploring 2024 Medicare Part D prescriber p
 ## Current milestone
 
 - Streams 1,416,883 provider records into a 608 KB browser-ready analysis file.
-- Uses D3 scales for an interactive specialty scatterplot, median references, a state lollipop comparison, and provider distributions.
+- Uses D3 scales for an interactive specialty scatterplot, median references, an equal-area state tile map, a ranked lollipop comparison, and provider distributions.
 - Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
 - Includes a searchable inventory and classification of all 84 CMS source fields.
 - Keeps the attached Canvas assignment evidence in a dedicated coursework route.
@@ -65,6 +65,16 @@ The preprocessing script streams the source rather than loading the 750 MB file 
 4. Push to `main`. The included workflow builds and publishes the static site.
 
 For a project repository, the deployment workflow adds the repository name to exported asset paths. User sites named `username.github.io` stay at the domain root.
+
+### Canvas: Repository Setup
+
+The attached Week 1 brief asks for a single course repository, an edited front-end, a working GitHub Pages URL, and a short screenshot/link/write-up shared in Discord and Canvas. This project contains the edited front-end and the Pages workflow. After publishing through GitHub Desktop, submit:
+
+1. Your GitHub repository URL.
+2. The GitHub Pages URL created by the workflow.
+3. A screenshot and brief description of the interactive Medicare Part D analysis.
+
+The site does not invent the first two URLs because they depend on your GitHub account and repository name.
 
 ## Data interpretation
 

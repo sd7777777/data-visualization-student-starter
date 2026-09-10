@@ -2,7 +2,7 @@
 
 import { median } from 'd3-array';
 import { scaleLinear, scaleLog, scaleQuantize, scaleSqrt } from 'd3-scale';
-import type { Specialty, SpecialtyProfile } from '@/lib/prescriber';
+import type { Dataset, Specialty, SpecialtyProfile } from '@/lib/prescriber';
 
 export type Lens = 'economics' | 'categories';
 const short = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
@@ -74,11 +74,11 @@ export function SpecialtyRanking({ specialties, metric, selected, onSelect }: { 
   </figure>;
 }
 
-export function ConcentrationCurve({ specialties, metric, selected, onSelect }: { specialties: Specialty[]; metric: ConcentrationMetric; selected: string; onSelect: (value: string) => void }) {
+export function ConcentrationCurve({ specialties, totals, metric, selected, onSelect }: { specialties: Specialty[]; totals: Pick<Specialty, 'cost' | 'claims'>; metric: ConcentrationMetric; selected: string; onSelect: (value: string) => void }) {
   const width = 760, height = 470;
   const m = { top: 28, right: 34, bottom: 52, left: 65 };
   const rows = [...specialties].sort((a, b) => b[metric] - a[metric]);
-  const total = rows.reduce((sum, d) => sum + d[metric], 0);
+  const total = totals[metric];
   const points = rows.map((d, i) => ({ datum: d, rank: i + 1, share: rows.slice(0, i + 1).reduce((sum, item) => sum + item[metric], 0) / total }));
   const x = scaleLinear().domain([0, rows.length]).range([m.left, width - m.right]);
   const y = scaleLinear().domain([0, 1]).range([height - m.bottom, m.top]);
@@ -95,7 +95,41 @@ export function ConcentrationCurve({ specialties, metric, selected, onSelect }: 
       {points.map((point) => <circle key={point.datum.specialty} cx={x(point.rank)} cy={y(point.share)} r={point.datum.specialty === selected ? 6 : 3} className={point.datum.specialty === selected ? 'curve-point active' : 'curve-point'} tabIndex={0} role="button" aria-label={`${point.datum.specialty}: cumulative ${Math.round(point.share * 100)} percent at rank ${point.rank}`} onMouseEnter={() => onSelect(point.datum.specialty)} onFocus={() => onSelect(point.datum.specialty)} onClick={() => onSelect(point.datum.specialty)}/>) }
       <text x={(m.left + width - m.right) / 2} y={height - 5} textAnchor="middle" className="axis-label">NUMBER OF SPECIALTIES INCLUDED →</text>
     </svg>
-    <figcaption><b>Top 5:</b> {Math.round(top5 * 100)}% · <b>Top 10:</b> {Math.round(top10 * 100)}% of {metric === 'cost' ? 'drug cost' : 'claims'}.</figcaption>
+    <figcaption><b>Top 5:</b> {Math.round(top5 * 100)}% · <b>Top 10:</b> {Math.round(top10 * 100)}% of all {metric === 'cost' ? 'drug cost' : 'claims'}.</figcaption>
+  </figure>;
+}
+
+export function SpecialtyComposition({ specialties, totalCost, selected, onSelect }: { specialties: Specialty[]; totalCost: number; selected: string; onSelect: (value: string) => void }) {
+  const width = 760, height = 330;
+  const sorted = [...specialties].sort((a, b) => b.cost - a.cost);
+  const top = sorted.slice(0, 9);
+  const segments = [...top.map((d) => ({ specialty: d.specialty, value: d.cost, datum: d })), { specialty: 'All other specialties', value: Math.max(0, totalCost - top.reduce((sum, d) => sum + d.cost, 0)), datum: null }];
+  const positioned = segments.map((d, i) => ({ ...d, start: segments.slice(0,i).reduce((sum,item) => sum + item.value,0) / totalCost, share: d.value / totalCost }));
+  const x = scaleLinear().domain([0, 1]).range([30, width - 30]);
+  return <figure className="chart-panel mini-chart composition-chart">
+    <div className="figure-head"><div><span className="figure-no">04</span><h2>Drug-cost composition</h2></div><p>Share of the selected geography’s specialty total. The nine largest specialties are shown separately.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Drug cost share by specialty">
+      {positioned.map((segment, i) => <g key={segment.specialty} className="composition-group" role={segment.datum ? 'button' : undefined} tabIndex={segment.datum ? 0 : -1} aria-label={`${segment.specialty}: ${oneDecimal.format(segment.share * 100)} percent`} onMouseEnter={() => segment.datum && onSelect(segment.specialty)} onFocus={() => segment.datum && onSelect(segment.specialty)} onClick={() => segment.datum && onSelect(segment.specialty)}><rect x={x(segment.start)} y="35" width={Math.max(1, x(segment.start + segment.share) - x(segment.start))} height="72" className={segment.specialty === selected ? 'composition-segment active' : `composition-segment tone-${i % 2}`}/>{segment.share > .045 && <text x={x(segment.start + segment.share / 2)} y="77" textAnchor="middle" className="segment-label">{oneDecimal.format(segment.share * 100)}%</text>}</g>)}
+      {positioned.map((segment, i) => { const col = i < 5 ? 0 : 1; const row = i % 5; const xx = 32 + col * 365; const yy = 145 + row * 31; return <g key={`legend-${segment.specialty}`} transform={`translate(${xx},${yy})`} className="composition-group" role={segment.datum ? 'button' : undefined} tabIndex={segment.datum ? 0 : -1} onMouseEnter={() => segment.datum && onSelect(segment.specialty)} onFocus={() => segment.datum && onSelect(segment.specialty)} onClick={() => segment.datum && onSelect(segment.specialty)}><rect width="12" height="12" className={segment.specialty === selected ? 'composition-segment active' : `composition-segment tone-${i % 2}`}/><text x="20" y="10" className="composition-label">{i + 1}. {segment.specialty.length > 27 ? `${segment.specialty.slice(0,27)}…` : segment.specialty}</text><text x="345" y="10" textAnchor="end" className="composition-value">{oneDecimal.format(segment.share * 100)}%</text></g>; })}
+    </svg>
+  </figure>;
+}
+
+export function CostProviderBalance({ specialties, totalCost, totalProviders, selected, onSelect }: { specialties: Specialty[]; totalCost: number; totalProviders: number; selected: string; onSelect: (value: string) => void }) {
+  const width = 760, height = 470;
+  const m = { top: 25, right: 50, bottom: 48, left: 185 };
+  const rows = specialties.map((d) => ({ datum: d, delta: d.cost / totalCost * 100 - d.providers / totalProviders * 100 })).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 12);
+  const extent = Math.max(...rows.map((d) => Math.abs(d.delta)));
+  const x = scaleLinear().domain([-extent, extent]).nice().range([m.left, width - m.right]);
+  const step = (height - m.top - m.bottom) / rows.length;
+  return <figure className="chart-panel mini-chart balance-chart">
+    <div className="figure-head"><div><span className="figure-no">05</span><h2>Cost share minus provider share</h2></div><p>Positive values account for more drug cost than provider records; negative values account for less.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Difference between drug cost share and provider record share by specialty">
+      <line x1={x(0)} x2={x(0)} y1={m.top} y2={height - m.bottom} className="zero-line"/>
+      {x.ticks(5).map((tick) => <text key={tick} x={x(tick)} y={height - 17} textAnchor="middle" className="tick">{tick > 0 ? '+' : ''}{oneDecimal.format(tick)}pp</text>)}
+      {rows.map(({ datum, delta }, i) => { const yy = m.top + i * step + step * .2; const start = Math.min(x(0), x(delta)); return <g key={datum.specialty} className="bar-row" role="button" tabIndex={0} onMouseEnter={() => onSelect(datum.specialty)} onFocus={() => onSelect(datum.specialty)} onClick={() => onSelect(datum.specialty)} aria-label={`${datum.specialty}: ${oneDecimal.format(delta)} percentage points`}><text x={m.left - 10} y={yy + step * .32} textAnchor="end" className="state-label">{datum.specialty.length > 25 ? `${datum.specialty.slice(0,25)}…` : datum.specialty}</text><rect x={start} y={yy} width={Math.max(2, Math.abs(x(delta) - x(0)))} height={step * .5} className={`${delta >= 0 ? 'balance-bar positive' : 'balance-bar negative'}${datum.specialty === selected ? ' active' : ''}`}/></g>; })}
+      <text x={m.left} y={height - 2} className="axis-label">← LOWER COST SHARE</text><text x={width - m.right} y={height - 2} textAnchor="end" className="axis-label">HIGHER COST SHARE →</text>
+    </svg>
   </figure>;
 }
 
@@ -107,7 +141,7 @@ export function CategorySharePlot({ specialties, selected, onSelect }: { special
   const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / rows.length;
   return <figure className="chart-panel mini-chart">
-    <div className="figure-head"><div><span className="figure-no">04</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
+    <div className="figure-head"><div><span className="figure-no">06</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Opioid and antibiotic claim shares by specialty">
       <g className="dot-legend" transform={`translate(${m.left},11)`}><circle r="5" className="category-dot opioid"/><text x="10" y="4">OPIOID</text><circle cx="83" r="5" className="category-dot antibiotic"/><text x="93" y="4">ANTIBIOTIC</text></g>
       {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{oneDecimal.format(tick)}%</text></g>)}
@@ -145,7 +179,7 @@ export function SpecialtyFingerprint({ specialties, selected }: { specialties: S
     return { ...metric, raw, percentile };
   });
   return <figure className="chart-panel mini-chart fingerprint-chart">
-    <div className="figure-head"><div><span className="figure-no">05</span><h2>{datum.specialty}</h2></div><p>Percentile among specialties in the selected geography. Farther right means higher, not better.</p></div>
+    <div className="figure-head"><div><span className="figure-no">07</span><h2>{datum.specialty}</h2></div><p>Percentile among displayed specialties. Farther right means higher, not better.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Percentile profile for ${datum.specialty}`}>
       {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 15} textAnchor="middle" className="tick">{tick}th</text></g>)}
       {ranked.map((metric, i) => { const yy = m.top + i * step + step / 2; return <g key={metric.label}><text x={m.left - 12} y={yy - 3} textAnchor="end" className="state-label">{metric.label}</text><text x={m.left - 12} y={yy + 13} textAnchor="end" className="raw-value">{metric.format(metric.raw)}</text><rect x={m.left} y={yy - 8} width={Math.max(2,x(metric.percentile)-m.left)} height="16" className={`fingerprint-bar metric-${i}`}/><circle cx={x(metric.percentile)} cy={yy} r="6" className={`fingerprint-dot metric-${i}`}/><text x={Math.min(width - 4,x(metric.percentile)+10)} y={yy + 4} className="value-label">{Math.round(metric.percentile)}th</text></g>; })}
@@ -181,7 +215,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
   const fmt = metricFormatter(metric);
   const tile = 49, gap = 5, originX = 38, originY = 36;
   return <figure className="chart-panel tile-map-panel">
-    <div className="figure-head"><div><span className="figure-no">06</span><h2>State and territory values</h2></div><p>Equal-area tiles keep small places clickable. Color is binned from low to high.</p></div>
+    <div className="figure-head"><div><span className="figure-no">08</span><h2>State and territory values</h2></div><p>Equal-area tiles keep small places clickable. Color is binned from low to high.</p></div>
     <div className="map-readout" aria-live="polite"><span>{active.name.toUpperCase()}</span><strong>{fmt(activeValue)}</strong><em>{Math.abs(delta).toFixed(1)}% {delta >= 0 ? 'above' : 'below'} the national specialty aggregate</em></div>
     <svg viewBox="0 0 780 490" role="img" aria-label={`Tile map of ${metricTitle(metric)} for ${profile.specialty}`}>
       {stateTiles.map(([code, col, row]) => {
@@ -189,7 +223,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
         const fill = datum ? color(metricValue(datum, metric)) : '#e5e7e3';
         const isActive = active.code === code;
         return <g key={code} transform={`translate(${originX + col * (tile + gap)},${originY + row * (tile + gap)})`} role="button" tabIndex={datum ? 0 : -1} aria-label={datum ? `${datum.name}: ${fmt(metricValue(datum, metric))}` : `${code}: no value`} onMouseEnter={() => datum && onSelect(code)} onFocus={() => datum && onSelect(code)} onClick={() => datum && onSelect(code)} className={datum ? 'tile-group' : 'tile-group unavailable'}>
-          <rect width={tile} height={tile} rx="1" fill={isActive ? '#f05a28' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
+          <rect width={tile} height={tile} rx="1" fill={isActive ? '#e6532f' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
         </g>;
       })}
       <g transform="translate(38,455)"><text className="legend-label" y="10">LOW</text>{color.range().map((swatch, i) => <rect key={swatch} x={38 + i * 34} width="34" height="12" fill={swatch}/>)}<text className="legend-label" x="218" y="10">HIGH</text><text className="legend-label" x="310" y="10">{metricTitle(metric).toUpperCase()}</text></g>
@@ -207,11 +241,44 @@ export function StateComparison({ profile, metric }: { profile: SpecialtyProfile
   const step = (height - m.top - m.bottom) / states.length;
   const formatter = metricFormatter(metric);
   return <figure className="chart-panel compact-chart">
-    <div className="figure-head"><div><span className="figure-no">07</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
+    <div className="figure-head"><div><span className="figure-no">09</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`State comparison for ${profile.specialty}`}>
       {x.ticks(5).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{formatter(tick)}</text></g>)}
       {states.map((d, i) => { const yy = m.top + i * step + step / 2; return <g key={d.code}><text x={m.left - 12} y={yy + 4} textAnchor="end" className="state-label">{d.name}</text><line x1={m.left} x2={x(value(d))} y1={yy} y2={yy} className="stem"/><circle cx={x(value(d))} cy={yy} r="5.5" className="state-dot"/><text x={x(value(d)) + 11} y={yy + 4} className="value-label">{formatter(value(d))}</text></g>; })}
       <text x={(m.left + width - m.right) / 2} y={height - 12} textAnchor="middle" className="axis-label">{metric === 'costPerClaim' ? 'TOTAL DRUG COST / CLAIM' : metric === 'opioidShare' ? 'REPORTED OPIOID CLAIM SHARE' : 'CLAIMS / PROVIDER'}</text>
+    </svg>
+  </figure>;
+}
+
+export function DistributionHistogram({ data, active }: { data: Dataset; active: string }) {
+  const distribution = data.distributions.find((d) => d.key === active) ?? data.distributions[0];
+  const width = 760, height = 410;
+  const m = { top: 28, right: 20, bottom: 68, left: 52 };
+  const max = Math.max(...distribution.bins.map((d) => d.count));
+  const y = scaleLog().domain([1, max]).range([height - m.bottom, m.top]);
+  const step = (width - m.left - m.right) / distribution.bins.length;
+  return <figure className="chart-panel mini-chart distribution-chart">
+    <div className="figure-head"><div><span className="figure-no">10</span><h2>{distribution.label}</h2></div><p>Provider-record counts by fixed bin. Bar height uses a log scale so the long tail stays visible.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Distribution of ${distribution.label}`}>
+      {y.ticks(5).filter((tick) => tick >= 1 && tick <= max).map((tick) => <g key={tick}><line x1={m.left} x2={width-m.right} y1={y(tick)} y2={y(tick)} className="gridline"/><text x={m.left-8} y={y(tick)+4} textAnchor="end" className="tick">{short.format(tick)}</text></g>)}
+      {distribution.bins.map((bin, i) => { const barY = y(Math.max(1,bin.count)); return <g key={bin.label}><rect x={m.left + i * step + 3} y={barY} width={Math.max(2,step-6)} height={height-m.bottom-barY} className="distribution-bar"/><text x={m.left + i * step + step/2} y={height-m.bottom+18} textAnchor="middle" className="bin-label">{bin.label}</text><text x={m.left + i * step + step/2} y={barY-6} textAnchor="middle" className="bar-count">{short.format(bin.count)}</text></g>; })}
+    </svg>
+    <figcaption>{data.meta.rows.toLocaleString()} provider records.</figcaption>
+  </figure>;
+}
+
+export function FieldMissingnessPlot({ data }: { data: Dataset }) {
+  const width = 760, height = 470;
+  const m = { top: 24, right: 42, bottom: 52, left: 190 };
+  const rows = [...data.schema].sort((a,b) => b.missingRate - a.missingRate).slice(0,12);
+  const x = scaleLinear().domain([0,100]).range([m.left,width-m.right]);
+  const step = (height-m.top-m.bottom)/rows.length;
+  return <figure className="chart-panel mini-chart missingness-chart">
+    <div className="figure-head"><div><span className="figure-no">11</span><h2>Fields with the most blanks</h2></div><p>Blank-cell rate for the 12 least complete fields. Orange dots show suppression-marker rate.</p></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="CMS fields with the highest blank rates">
+      {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height-m.bottom} className="gridline"/><text x={x(tick)} y={height-18} textAnchor="middle" className="tick">{tick}%</text></g>)}
+      {rows.map((field,i) => { const yy=m.top+i*step+step*.22; const markerRate=field.markers/data.meta.rows*100; return <g key={field.name}><text x={m.left-10} y={yy+step*.31} textAnchor="end" className="field-label">{field.name}</text><rect x={m.left} y={yy} width={Math.max(2,x(field.missingRate)-m.left)} height={step*.48} className="missing-bar"/><circle cx={x(markerRate)} cy={yy+step*.24} r="4.5" className="marker-dot"/><text x={Math.min(width-4,x(field.missingRate)+8)} y={yy+step*.31} className="value-label">{oneDecimal.format(field.missingRate)}%</text></g>; })}
+      <text x={(m.left+width-m.right)/2} y={height-2} textAnchor="middle" className="axis-label">SHARE OF PROVIDER RECORDS →</text>
     </svg>
   </figure>;
 }

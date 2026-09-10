@@ -1,23 +1,20 @@
-# Part D Field Notes
+# Medicare Part D Prescriber Explorer
 
-An interactive portfolio project for exploring 2024 Medicare Part D prescriber patterns by geography and clinical specialty. The project is designed to grow through a semester of visualization assignments without accumulating a maze of disconnected pages.
+An interactive, one-page exploration of 2024 Medicare Part D prescriber patterns by geography and clinical specialty.
 
 ## Current milestone
 
 - Streams 1,416,883 provider records into a 608 KB browser-ready analysis file.
-- Uses D3 scales for an interactive specialty scatterplot, median references, an equal-area state tile map, a ranked lollipop comparison, and provider distributions.
+- Uses D3 scales and SVG for 11 views covering relationships, concentration, composition, clinical mix, geography, distributions, and missingness.
 - Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
-- Includes a searchable inventory and classification of all 84 CMS source fields.
-- Keeps the attached Canvas assignment evidence in a dedicated coursework route.
+- Keeps every public visualization and control on one page.
 - Exports as a static site compatible with GitHub Pages.
 
 ## Project map
 
 ```text
 app/
-  page.tsx                  Main analytical narrative
-  lab/page.tsx              Dataset profile and field inventory
-  coursework/page.tsx       Canvas brief crosswalk and task analysis
+  page.tsx                  One-page explorer entry point
   globals.css               Shared visual theme and typography
 components/
   site-header.tsx           Shared navigation
@@ -26,7 +23,7 @@ lib/
 src/assignments/
   index.ts                  Starter-style assignment registry
   week-01/                  Live explorer and D3 visualizations
-  week-02/                  Dataset lab assignment
+  week-02/                  Data preparation assignment source
   week-03/                  First Visual export and documentation
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
@@ -38,7 +35,7 @@ docs/
   deploy-pages.yml          GitHub Pages deployment
 ```
 
-The site is deliberately split into three routes: a portfolio-facing narrative, an inspectable data lab, and course evidence. New assignments can add a view or extend an existing route without turning the main story into a checklist.
+The public site is one page. Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
 
 ## Work locally
 
@@ -49,7 +46,7 @@ pnpm install
 pnpm dev
 ```
 
-Open the local address shown in the terminal. Visualization logic lives in `components/analysis-charts.tsx`; global layout and type choices live in `app/globals.css`.
+Open the local address shown in the terminal. Visualization logic lives in `src/assignments/week-01/analysis-charts.tsx`; global layout and type choices live in `app/globals.css`.
 
 ## Refresh the data
 
@@ -63,10 +60,12 @@ The preprocessing script streams the source rather than loading the 750 MB file 
 
 ## Publish with GitHub Desktop
 
-1. In GitHub Desktop, choose **File → Add local repository** and select this folder.
-2. If prompted, create a repository here, then publish it to GitHub.
-3. On GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
-4. Push to `main`. The included workflow builds and publishes the static site.
+1. Fork [Curran's student starter](https://github.com/curran/data-visualization-student-starter) on GitHub.
+2. In GitHub Desktop, choose **File → Add local repository** and select this project folder.
+3. Point the repository's primary remote to your fork, then push `main`.
+4. On GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+
+The site header also provides a ZIP download of the tracked source files. Using the existing local folder in GitHub Desktop is preferable because it preserves the starter's Git history.
 
 For a project repository, the deployment workflow adds the repository name to exported asset paths. User sites named `username.github.io` stay at the domain root.
 

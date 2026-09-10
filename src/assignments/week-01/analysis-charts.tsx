@@ -210,7 +210,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
   const plotted = stateTiles.map(([code]) => byCode.get(code)).filter((d): d is SpecialtyProfile['states'][number] => Boolean(d));
   const values = plotted.map((d) => metricValue(d, metric));
   const min = Math.min(...values), max = Math.max(...values);
-  const color = scaleQuantize<string>().domain([min, max]).range(['#e7e0ef','#cab8dc','#a387bd','#745795','#432e69']);
+  const color = scaleQuantize<string>().domain([min, max]).range(['#d8fbff','#83e7f4','#2fb7dd','#3267dc','#302080']);
   const active = byCode.get(selected) ?? plotted[0];
   const activeValue = metricValue(active, metric);
   const nationalValue = metricValue(profile.national, metric);
@@ -223,10 +223,10 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
     <svg viewBox="0 0 780 490" role="img" aria-label={`Tile map of ${metricTitle(metric)} for ${profile.specialty}`}>
       {stateTiles.map(([code, col, row]) => {
         const datum = byCode.get(code);
-        const fill = datum ? color(metricValue(datum, metric)) : '#e5e7e3';
+        const fill = datum ? color(metricValue(datum, metric)) : 'var(--no-data)';
         const isActive = active.code === code;
         return <g key={code} transform={`translate(${originX + col * (tile + gap)},${originY + row * (tile + gap)})`} role="button" tabIndex={datum ? 0 : -1} aria-label={datum ? `${datum.name}: ${fmt(metricValue(datum, metric))}` : `${code}: no value`} onMouseEnter={() => datum && onSelect(code)} onFocus={() => datum && onSelect(code)} onClick={() => datum && onSelect(code)} className={datum ? 'tile-group' : 'tile-group unavailable'}>
-          <rect width={tile} height={tile} rx="1" fill={isActive ? '#e6532f' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
+          <rect width={tile} height={tile} rx="1" fill={isActive ? 'var(--orange)' : fill} className={isActive ? 'state-tile active' : 'state-tile'}/><text x={tile/2} y={tile/2 + 4} textAnchor="middle" className="tile-label">{code}</text>
         </g>;
       })}
       <g transform="translate(38,455)"><text className="legend-label" y="10">{fmt(min)}</text>{color.range().map((swatch, i) => <rect key={swatch} x={48 + i * 34} width="34" height="12" fill={swatch}/>)}<text className="legend-label" x="224" y="10">{fmt(max)}</text><text className="legend-label" x="315" y="10">{metricTitle(metric).toUpperCase()}</text></g>

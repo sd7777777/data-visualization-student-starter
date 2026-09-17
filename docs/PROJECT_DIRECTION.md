@@ -30,7 +30,7 @@ The source is a provider table with one row per NPI. It combines categorical att
 
 ## Visual rationale
 
-The primary field uses position for the two measures being compared because position supports more accurate comparison than color or area. D3 logarithmic scales preserve long-tailed variation; circle area uses a square-root scale for provider count and remains secondary. Orange identifies the active mark, and a coordinated detail panel supplies exact values for pointer or keyboard focus.
+The primary field uses position for the two measures being compared because position supports more accurate comparison than color or area. D3 logarithmic scales preserve long-tailed variation; a linear option reveals absolute differences. Circle area uses a square-root scale for provider count and remains secondary. Orange identifies the active mark, and a coordinated detail panel supplies exact values for pointer or keyboard focus. The Week 04 copy adds collision-filtered ticks, 1×–4× zoom, and a hover label that disappears on exit.
 
 The two lenses deliberately ask different questions:
 
@@ -43,7 +43,7 @@ CMS states that the dataset covers Medicare Part D activity, not a provider's co
 
 ## Likely next milestones
 
-- Introduce a map only when the spatial question is clear enough to justify it.
+- Evaluate whether a real boundary map would answer the spatial question better than the current equal-area tiles; source and size of GeoJSON need validation first.
 - Add multi-year comparison after establishing a stable transformation pipeline across CMS releases.
 - Add annotation for a small number of source-backed findings.
 - Add the student's hand-drawn exploration sketches and design notes.
@@ -51,4 +51,13 @@ CMS states that the dataset covers Medicare Part D activity, not a provider's co
 
 ## Course repository structure
 
-The site is organized as one repository with a reproducible data preparation script, reusable D3 chart components, three coordinated routes, and an included GitHub Pages deployment workflow. The live explorer and chart source sit in `src/assignments/week-01`, the data lab sits in `src/assignments/week-02`, and the assignment index drives the site navigation. The local history descends from Curran's starter so it can be pushed onto a GitHub-created fork without rewriting the branch.
+The site is organized as one repository with a reproducible data preparation script, reusable D3 chart components, one public page, and an included GitHub Pages deployment workflow. The explorer and original chart source sit in `src/assignments/week-01`, the data lab sits in `src/assignments/week-02`, the Week 03 export preserves the original first visual, and the Week 04 folder contains its legibility revision. The local history descends from Curran's starter and is connected to the GitHub-created fork.
+
+## Validation plan (Munzner, Chapter 4)
+
+1. **Domain situation:** Check with a healthcare analytics reader whether specialty and geography comparisons answer a real research question without implying care quality.
+2. **Task and data abstraction:** Confirm the comparison and outlier tasks match the dataset's row unit, aggregated measures, and suppression limits; recalculate source samples.
+3. **Visual encoding and interaction idiom:** Observe readers finding an outlier and explaining circle area, log/linear scales, zoom, and schematic state tiles without prompting.
+4. **Algorithm:** Reconcile Python summary totals with the CMS file, then test load speed and interaction responsiveness on a phone and laptop.
+
+These are proposed checks, not results from completed user studies.

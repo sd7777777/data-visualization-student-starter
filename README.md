@@ -8,7 +8,7 @@ An interactive, one-page exploration of 2024 Medicare Part D prescriber patterns
 - Uses D3 scales and SVG for 12 views covering relationships, concentration, composition, clinical mix, geography, distributions, field types, and missingness.
 - Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
 - Keeps every public visualization and control on one page.
-- Ends with six visualization-independent analytical tasks that guide later design decisions.
+- Ends with six visualization-independent analytical tasks and a four-level validation plan.
 - Exports as a static site compatible with GitHub Pages.
 
 ## Project map
@@ -26,6 +26,7 @@ src/assignments/
   week-01/                  Live explorer and D3 visualizations
   week-02/                  Data preparation assignment source
   week-03/                  First Visual export and documentation
+  week-04/                  Legibility revision of the first visual
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
@@ -43,6 +44,7 @@ The public site is one page. Assignment source folders remain separate so new wo
 - **Week 1 — Repository Setup:** the page shell, starter-compatible source structure, downloadable files, and GitHub Pages workflow.
 - **Week 2 — Load & Summarize a Dataset:** the dataset strip near the top and the data-quality section, including row/column counts, attribute classifications, distributions, missingness, browser-ready JSON, and dataset README.
 - **Week 3 — First Visual:** Figure 01, an interactive D3 scatterplot connecting specialty-level prescribing volume with cost or reported drug-category share.
+- **Week 4 — Legibility and Validation:** a preserved copy of the first visual, improved axes and chart title, linear/log scale comparison, selected-point zoom, hover-only labeling, and a four-level validation plan.
 - **Project extensions:** Figures 02–12 continue the same dataset story. They are labeled separately so they are not confused with the three graded milestones.
 
 ## Work locally
@@ -54,7 +56,7 @@ pnpm install
 pnpm dev
 ```
 
-Open the local address shown in the terminal. Visualization logic lives in `src/assignments/week-01/analysis-charts.tsx`; global layout and type choices live in `app/globals.css`.
+Open the local address shown in the terminal. The original visualization logic lives in `src/assignments/week-01/analysis-charts.tsx`; the revised first chart lives in `src/assignments/week-04/LegibilityScatter.tsx`. Global layout and type choices live in `app/globals.css`.
 
 ## Refresh the data
 
@@ -68,10 +70,7 @@ The preprocessing script streams the source rather than loading the 750 MB file 
 
 ## Publish with GitHub Desktop
 
-1. Fork [Curran's student starter](https://github.com/curran/data-visualization-student-starter) on GitHub.
-2. In GitHub Desktop, choose **File → Add local repository** and select this project folder.
-3. Point the repository's primary remote to your fork, then push `main`.
-4. On GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+The repository is already connected to [your starter fork](https://github.com/sd7777777/data-visualization-student-starter), and [GitHub Pages](https://sd7777777.github.io/data-visualization-student-starter/) is enabled. Open this folder in GitHub Desktop, review changes, commit, and push `main`; the Pages workflow builds and deploys automatically.
 
 The site header also provides a ZIP download of the tracked source files. Using the existing local folder in GitHub Desktop is preferable because it preserves the starter's Git history.
 

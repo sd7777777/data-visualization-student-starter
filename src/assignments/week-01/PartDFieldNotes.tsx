@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SiteHeader } from '@/components/site-header';
 import { CategorySharePlot, ConcentrationCurve, CostProviderBalance, DistributionHistogram, FieldMissingnessPlot, FieldTypeBars, SpecialtyComposition, SpecialtyFingerprint, SpecialtyRanking, StateComparison, StateTileMap, type ConcentrationMetric, type Metric, type RankMetric } from './analysis-charts';
-import { LegibilityScatter, type AxisScale, type ZoomLevel } from '../week-04/LegibilityScatter';
+import { InteractionScatter, type AxisScale, type ZoomLevel } from '../week-05/InteractionScatter';
 import { compact, dollars, money, percent, type Dataset } from '@/lib/prescriber';
 
 type Lens = 'economics' | 'categories';
@@ -25,6 +25,12 @@ export default function PartDFieldNotes() {
   const [distribution, setDistribution] = useState('claims');
   const [selectedState, setSelectedState] = useState('CA');
   useEffect(() => { void fetch('./data/prescriber-summary/summary.json').then((r) => r.json()).then((payload) => setData(payload as Dataset)); }, []);
+  useEffect(() => {
+    if (!data || !window.location.hash) return;
+    // Anchors do not exist during the initial data-loading render.
+    const frame = requestAnimationFrame(() => document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: 'instant' }));
+    return () => cancelAnimationFrame(frame);
+  }, [data]);
   const area = useMemo(() => data?.areas.find((d) => d.code === areaCode) ?? data?.areas[0], [data, areaCode]);
   const specialty = area?.specialties.find((d) => d.specialty === selected) ?? area?.specialties[0];
   const profile = data?.specialtyProfiles.find((d) => d.specialty === profileName) ?? data?.specialtyProfiles[0];
@@ -38,7 +44,7 @@ export default function PartDFieldNotes() {
       name: 'set_prescriber_view', title: 'Set prescriber explorer view', description: 'Change the visible geography and analytical lens in the Medicare Part D explorer.',
       inputSchema: { type: 'object', properties: { geography: { type: 'string' }, lens: { type: 'string', enum: ['economics', 'categories'] } }, required: ['geography', 'lens'], additionalProperties: false },
       annotations: { readOnlyHint: false, untrustedContentHint: false },
-      execute(input: unknown) { const v = input as { geography?: unknown; lens?: unknown }; if (typeof v.geography !== 'string' || !validAreas.has(v.geography)) throw new Error('Unknown geography.'); if (v.lens !== 'economics' && v.lens !== 'categories') throw new Error('Unknown lens.'); setAreaCode(v.geography); setLens(v.lens); return { geography: v.geography, lens: v.lens }; },
+      execute(input: unknown) { const v = input as { geography?: unknown; lens?: unknown }; if (typeof v.geography !== 'string' || !validAreas.has(v.geography)) throw new Error('Unknown geography.'); if (v.lens !== 'economics' && v.lens !== 'categories') throw new Error('Unknown lens.'); setAreaCode(v.geography); setLens(v.lens); setZoom(1); return { geography: v.geography, lens: v.lens }; },
     }, { signal: lifecycle.signal })).catch(() => undefined);
     return () => lifecycle.abort();
   }, [data]);
@@ -57,6 +63,7 @@ export default function PartDFieldNotes() {
       <a href="#week-2"><b>Week 02</b><span>Load &amp; Summarize a Dataset</span><small>row/column summary · field types · README</small></a>
       <a href="#week-3"><b>Week 03</b><span>First Visual</span><small>Original D3 scatterplot</small></a>
       <a href="#week-4"><b>Week 04</b><span>Legibility revision</span><small>axes · scale choice · zoom · validation</small></a>
+      <a href="#week-5"><b>Week 05</b><span>Interaction &amp; updated sketches</span><small>group selection · comparison · proposal</small></a>
     </nav>
 
     <section className="week-two-summary" id="week-2">
@@ -67,20 +74,21 @@ export default function PartDFieldNotes() {
     <nav className="section-directory" aria-label="Explorer sections"><span>project extensions:</span><a href="#scale">scale</a><a href="#composition">composition</a><a href="#mix">clinical mix</a><a href="#place">geography</a><a href="#records">records</a><a href="#data">data quality</a><a href="#task-analysis">task analysis</a><a href="#validation">validation</a></nav>
 
     <section id="week-3" className="section-wrap">
-      <div className="story-question assignment-question"><b>WEEK 03 / FIRST VISUAL</b><h2>How do price and prescribing volume relate?</h2><p>The <a href="https://github.com/sd7777777/data-visualization-student-starter/blob/main/src/assignments/week-01/analysis-charts.tsx" target="_blank" rel="noreferrer">original chart source</a> is preserved; the visible chart is the Week 04 revision below.</p></div>
-      <p className="revision-line" id="week-4"><b>WEEK 04 / LEGIBILITY REVISION</b><span>Read the plot on its own; switch scales to check whether the apparent relationship changes.</span></p>
+      <div className="story-question assignment-question"><b>WEEK 03 / FIRST VISUAL</b><h2>How do price and prescribing volume relate?</h2><p>The <a href="https://github.com/sd7777777/data-visualization-student-starter/blob/main/src/assignments/week-01/analysis-charts.tsx" target="_blank" rel="noreferrer">original chart source</a> is preserved; the current version adds group comparison.</p></div>
+      <p className="revision-line" id="week-4"><b>WEEK 04 / LEGIBILITY</b><span>Titles, readable axes, scale choice, and zoom. <a href="https://github.com/sd7777777/data-visualization-student-starter/blob/main/src/assignments/week-04/LegibilityScatter.tsx">Preserved Week 04 source</a>.</span></p>
+      <p className="revision-line" id="week-5"><b>WEEK 05 / INTERACTION</b><span>Brush a group to compare specialties. <a href="https://github.com/sd7777777/data-visualization-student-starter/blob/main/src/assignments/week-05/InteractionScatter.tsx">New source</a> · <a href="https://github.com/sd7777777/data-visualization-student-starter/blob/main/docs/PROJECT_DIRECTION.md">Updated proposal &amp; sketch</a>.</span></p>
       <div className="control-rail">
         <div className="control-field"><span>GEOGRAPHY</span><Select value={areaCode} onValueChange={(v) => { setAreaCode(v ?? 'US'); setZoom(1); }}><SelectTrigger aria-label="Geography"><SelectValue/></SelectTrigger><SelectContent>{data.areas.map((d) => <SelectItem key={d.code} value={d.code}>{d.name}</SelectItem>)}</SelectContent></Select></div>
         <div className="control-field"><span>VIEW</span><Tabs value={lens} onValueChange={(v) => { setLens(v as Lens); setZoom(1); }}><TabsList><TabsTrigger value="economics">Cost × volume</TabsTrigger><TabsTrigger value="categories">Drug categories</TabsTrigger></TabsList></Tabs></div>
         {lens === 'economics' && <div className="control-field"><span>AXIS SCALE</span><Tabs value={axisScale} onValueChange={(v) => { setAxisScale(v as AxisScale); setZoom(1); }}><TabsList><TabsTrigger value="log">Log</TabsTrigger><TabsTrigger value="linear">Linear</TabsTrigger></TabsList></Tabs></div>}
-        <div className="control-field"><span>ZOOM AROUND SELECTION</span><Tabs value={String(zoom)} onValueChange={(v) => { setZoom(Number(v) as ZoomLevel); setZoomTarget(specialty.specialty); }}><TabsList><TabsTrigger value="1">1×</TabsTrigger><TabsTrigger value="2">2×</TabsTrigger><TabsTrigger value="4">4×</TabsTrigger></TabsList></Tabs></div>
+        <div className="control-field"><span>ZOOM AROUND INSPECTED SPECIALTY</span><Tabs value={String(zoom)} onValueChange={(v) => { setZoom(Number(v) as ZoomLevel); setZoomTarget(specialty.specialty); }}><TabsList><TabsTrigger value="1">1×</TabsTrigger><TabsTrigger value="2">2×</TabsTrigger><TabsTrigger value="4">4×</TabsTrigger></TabsList></Tabs></div>
         <p>Hover, focus, or click a circle for details.</p>
       </div>
       <div className="analysis-grid">
-        <LegibilityScatter specialties={area.specialties} geography={area.name} selected={specialty.specialty} onSelect={setSelected} lens={lens} axisScale={axisScale} zoom={zoom} zoomTarget={zoomTarget || specialty.specialty}/>
-        <aside className="inspection"><span className="eyebrow">SELECTED · {area.code}</span><h2>{specialty.specialty}</h2><p>{area.name}</p><dl>
+        <InteractionScatter key={area.code} specialties={area.specialties} geography={area.name} geographyCost={area.summary.cost} selected={specialty.specialty} onSelect={setSelected} lens={lens} axisScale={axisScale} zoom={zoom} zoomTarget={zoomTarget || specialty.specialty}/>
+        <aside className="inspection"><span className="eyebrow">INSPECTED · {area.code}</span><h2>{specialty.specialty}</h2><p>{area.name}</p><dl>
           <div><dt>Provider records</dt><dd>{specialty.providers.toLocaleString()}</dd></div><div><dt>Total claims</dt><dd>{compact.format(specialty.claims)}</dd></div><div><dt>Total drug cost</dt><dd>{money.format(specialty.cost)}</dd></div><div><dt>Cost / claim</dt><dd>{dollars.format(specialty.costPerClaim)}</dd></div><div><dt>Claims / provider</dt><dd>{Math.round(specialty.claims / specialty.providers).toLocaleString()}</dd></div><div><dt>Reported opioid share</dt><dd>{percent.format(specialty.opioidShare)}%</dd></div>
-        </dl><p className="note">Provider means one CMS row/NPI record. Rates based on suppressed subgroup values are conservative.</p></aside>
+        </dl><p className="note">Inspection follows one specialty; it does not change your comparison group. Provider means one CMS row/NPI record. Rates based on suppressed subgroup values are conservative.</p></aside>
       </div>
     </section>
 

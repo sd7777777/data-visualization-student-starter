@@ -2,7 +2,7 @@ export interface AssignmentEntry {
   id: string;
   name: string;
   navLabel: string;
-  path: '/' | '/#data' | '/#week-3' | '/#week-4';
+  path: '/' | '/#data' | '/#week-3' | '/#week-4' | '/#week-5';
   sourceDirectory: string;
 }
 
@@ -11,6 +11,7 @@ export const assignments: AssignmentEntry[] = [
   { id: 'week-02', name: 'Load & Summarize a Dataset', navLabel: 'Data', path: '/#data', sourceDirectory: 'src/assignments/week-02' },
   { id: 'week-03', name: 'First Visual', navLabel: 'First visual', path: '/#week-3', sourceDirectory: 'src/assignments/week-03' },
   { id: 'week-04', name: 'Legibility and Validation', navLabel: 'Revision', path: '/#week-4', sourceDirectory: 'src/assignments/week-04' },
+  { id: 'week-05', name: 'Interaction and Updated Sketches', navLabel: 'Interaction', path: '/#week-5', sourceDirectory: 'src/assignments/week-05' },
 ];
 
 export const assignmentsMap = new Map(assignments.map((assignment) => [assignment.id, assignment]));

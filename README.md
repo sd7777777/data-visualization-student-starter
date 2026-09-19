@@ -7,6 +7,7 @@ An interactive, one-page exploration of 2024 Medicare Part D prescriber patterns
 - Streams 1,416,883 provider records into a 608 KB browser-ready analysis file.
 - Uses D3 scales and SVG for 12 views covering relationships, concentration, composition, clinical mix, geography, distributions, field types, and missingness.
 - Supports national, state, and territory exploration with keyboard-accessible marks and exact-value inspection.
+- Adds rectangle-brush group selection, an equivalent checkbox picker, and weighted group comparisons (Week 5).
 - Keeps every public visualization and control on one page.
 - Ends with six visualization-independent analytical tasks and a four-level validation plan.
 - Exports as a static site compatible with GitHub Pages.
@@ -27,12 +28,14 @@ src/assignments/
   week-02/                  Data preparation assignment source
   week-03/                  First Visual export and documentation
   week-04/                  Legibility revision of the first visual
+  week-05/                  Group selection and linked comparison
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
   prepare_data.py           Repeatable CMS preprocessing pipeline
 docs/
   PROJECT_DIRECTION.md      Research, task, and design rationale
+  assets/                   Actual screenshots and a north-star sketch
 .github/workflows/
   deploy-pages.yml          GitHub Pages deployment
 ```
@@ -45,7 +48,8 @@ The public site is one page. Assignment source folders remain separate so new wo
 - **Week 2 — Load & Summarize a Dataset:** the dataset strip near the top and the data-quality section, including row/column counts, attribute classifications, distributions, missingness, browser-ready JSON, and dataset README.
 - **Week 3 — First Visual:** Figure 01, an interactive D3 scatterplot connecting specialty-level prescribing volume with cost or reported drug-category share.
 - **Week 4 — Legibility and Validation:** a preserved copy of the first visual, improved axes and chart title, linear/log scale comparison, selected-point zoom, hover-only labeling, and a four-level validation plan.
-- **Project extensions:** Figures 02–12 continue the same dataset story. They are labeled separately so they are not confused with the three graded milestones.
+- **Week 5 — Interaction and Updated Sketches:** a new copy of Week 4 adds rectangle selection, keyboard/touch selection by name, linked exact-value comparison, and weighted group summaries. The [updated proposal](docs/PROJECT_DIRECTION.md) includes screenshots and a new end-of-course sketch.
+- **Project extensions:** Figures 02–12 continue the same dataset story and are labeled separately from the weekly milestones.
 
 ## Work locally
 
@@ -56,9 +60,11 @@ pnpm install
 pnpm dev
 ```
 
-Open the local address shown in the terminal. The original visualization logic lives in `src/assignments/week-01/analysis-charts.tsx`; the revised first chart lives in `src/assignments/week-04/LegibilityScatter.tsx`. Global layout and type choices live in `app/globals.css`.
+Open the local address shown in the terminal. The original visualization logic lives in `src/assignments/week-01/analysis-charts.tsx`; the current first chart lives in `src/assignments/week-05/InteractionScatter.tsx`. Week 4 remains unchanged in its own directory. Global layout and type choices live in `app/globals.css`.
 
 ## Refresh the data
+
+Before publishing an interaction edit, run `node scripts/check_interaction.mjs`, `pnpm exec tsc --noEmit --incremental false`, and `pnpm build`. The interaction checks cover brushing geometry, weighted calculations, and all 63 geographies. Browser checks should also cover selection by mouse and keyboard, switching scales, geography reset, and narrow-screen horizontal scrolling.
 
 Download the current provider-level CSV from the [CMS dataset page](https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/medicare-part-d-prescribers-by-provider), then run:
 
@@ -80,17 +86,17 @@ For a project repository, the deployment workflow adds the repository name to ex
 
 The attached Week 1 brief asks for a fork of [Curran's student starter](https://github.com/curran/data-visualization-student-starter), a modified `src/assignments/week-01`, a working GitHub Pages URL, and a short screenshot/link/write-up shared in Discord and Canvas. The live explorer and D3 source now reside in that required directory, later assignments have their own directories, and `src/assignments/index.ts` is the assignment registry.
 
-The local Git branch also contains the starter's upstream history. This means it can be pushed as a fast-forward update after you create the actual fork on GitHub. The visible “forked from” badge can only be created by GitHub, so do not publish this as an unrelated new repository if that relationship is being graded. See `docs/STARTER_FORK_HANDOFF.md` for the exact handoff.
+The repository is already a fork of Curran’s starter and retains its upstream history. Continue committing to this fork in GitHub Desktop; there is no need to create another repository. `docs/STARTER_FORK_HANDOFF.md` preserves the initial setup notes.
 
-After connecting this branch to your fork and enabling Pages, submit:
+Project links:
 
-1. Your GitHub repository URL.
-2. The GitHub Pages URL created by the workflow.
-3. A screenshot and brief description of the interactive Medicare Part D analysis.
-
-The site does not invent the first two URLs because they depend on your GitHub account and fork name.
+1. [GitHub repository](https://github.com/sd7777777/data-visualization-student-starter)
+2. [Hosted explorer](https://sd7777777.github.io/data-visualization-student-starter/)
+3. [Updated project proposal](docs/PROJECT_DIRECTION.md)
 
 ## Data interpretation
+
+The scatterplot retains up to 32 highest-total-cost specialties in each geography. Membership changes by geography; displayed correlations describe that subset. Group ratios divide summed measures, and group cost share uses the full geography total. State profiles cover the top 18 national specialties. Provider detail is limited to ten highest-cost records per geography.
 
 CMS suppresses some values between 1 and 10, including counter-suppression in some subgroups. The visualization excludes missing subgroup values, so reported opioid and antibiotic shares are conservative lower-bound estimates. Total drug cost combines amounts paid by Part D plans, beneficiaries, government subsidies, and third parties; it is not Medicare payment alone and excludes manufacturer rebates.
 

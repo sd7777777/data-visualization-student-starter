@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1120" viewBox="0 0 1280 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Proposed Medicare Part D specialty comparison workflow</title>
+  <desc id="desc">A north-star sketch of a one-page workflow: collect specialties, compare the same group across geography, and record an evidence note. All names, marks, and ranges are illustrative placeholders. Future geographic linking and evidence-note export are not implemented.</desc>
+  <defs>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#162443}
+      .title{font-size:32px;font-weight:700}
+      .heading{font-size:22px;font-weight:700}
+      .label{font-size:17px;font-weight:700}
+      .body{font-size:17px}
+      .small{font-size:15px}
+      .muted{fill:#4c5c77}
+      .blue{fill:#1457d9}
+      .magenta{fill:#df0067}
+      .teal{fill:#00a67e}
+      .white{fill:white}
+      .rule{stroke:#c5cfe3;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect width="1280" height="1120" fill="#eff3ff"/>
+  <rect x="36" y="30" width="1208" height="1060" rx="4" fill="white" stroke="#c5cfe3"/>
+  <rect x="64" y="56" width="315" height="30" rx="3" fill="#1457d9"/>
+  <text x="78" y="77" class="small white" font-weight="700">NORTH STAR · PROPOSED DESIGN</text>
+  <text x="1216" y="77" text-anchor="end" class="small muted">Week 05 / updated sketches</text>
+  <text x="64" y="127" class="title">Build a specialty comparison</text>
+  <text x="64" y="156" class="body muted">Find a difference. Check its context. Keep the evidence with the observation.</text>
+  <text x="64" y="181" class="small magenta">Concept sketch, not a live view. All mark positions, names, and ranges below are illustrative.</text>
+  <line x1="64" y1="203" x2="1216" y2="203" class="rule"/>
+
+  <circle cx="81" cy="237" r="17" fill="#1457d9"/>
+  <text x="81" y="243" text-anchor="middle" class="label white">1</text>
+  <text x="109" y="245" class="heading">Collect the specialties you want to compare</text>
+  <rect x="64" y="265" width="705" height="355" fill="#f8faff" stroke="#c5cfe3"/>
+  <text x="84" y="294" class="label">Cost and prescribing volume</text>
+  <text x="84" y="320" class="small muted">Geography [United States ▾]    Scale [Log / Linear]    [Reset]</text>
+  <path d="M140 354 V546 H731" fill="none" stroke="#657692" stroke-width="1.5"/>
+  <line x1="140" y1="403" x2="731" y2="403" class="rule" stroke-dasharray="3 5"/>
+  <line x1="140" y1="476" x2="731" y2="476" class="rule" stroke-dasharray="3 5"/>
+  <text x="431" y="578" text-anchor="middle" class="small muted">Cost per claim →</text>
+  <text x="103" y="450" text-anchor="middle" class="small muted" transform="rotate(-90 103 450)">Claims per provider →</text>
+  <g fill="#1457d9" fill-opacity="0.44">
+    <circle cx="186" cy="505" r="9"/><circle cx="225" cy="471" r="13"/>
+    <circle cx="285" cy="510" r="7"/><circle cx="306" cy="427" r="10"/>
+    <circle cx="363" cy="467" r="16"/><circle cx="418" cy="507" r="10"/>
+    <circle cx="449" cy="377" r="8"/><circle cx="587" cy="517" r="13"/>
+    <circle cx="698" cy="373" r="7"/>
+  </g>
+  <rect x="485" y="392" width="162" height="100" fill="#df0067" fill-opacity="0.07" stroke="#df0067" stroke-width="2" stroke-dasharray="6 4"/>
+  <g fill="#df0067" stroke="white" stroke-width="2">
+    <circle cx="512" cy="463" r="10"/><circle cx="568" cy="421" r="14"/><circle cx="620" cy="470" r="8"/>
+  </g>
+  <text x="495" y="385" class="small magenta">Brush a group</text>
+  <text x="84" y="603" class="small muted">Position-based selection and keyboard name selection share one group.</text>
+
+  <rect x="789" y="265" width="427" height="355" fill="white" stroke="#c5cfe3"/>
+  <rect x="789" y="265" width="427" height="48" fill="#eff3ff"/>
+  <text x="811" y="295" class="label">Your comparison group</text>
+  <text x="811" y="342" class="small muted">Illustrative names / no measured values</text>
+  <g fill="#df0067">
+    <rect x="812" y="362" width="15" height="15"/><rect x="812" y="399" width="15" height="15"/><rect x="812" y="436" width="15" height="15"/>
+  </g>
+  <text x="842" y="375" class="body">Specialty A</text>
+  <text x="842" y="412" class="body">Specialty B</text>
+  <text x="842" y="449" class="body">Specialty C</text>
+  <line x1="811" y1="470" x2="1194" y2="470" class="rule"/>
+  <text x="811" y="501" class="label">Compare exact measures</text>
+  <text x="811" y="530" class="small muted">Cost / claim · claims / provider · category shares</text>
+  <text x="811" y="560" class="small muted">Group ratios calculated from summed totals.</text>
+  <text x="811" y="594" class="small blue">Selection + linked metrics implemented in Week 05</text>
+
+  <circle cx="81" cy="657" r="17" fill="#00a67e"/>
+  <text x="81" y="663" text-anchor="middle" class="label white">2</text>
+  <text x="109" y="665" class="heading">Check the same group across geography</text>
+  <text x="1216" y="663" text-anchor="end" class="small teal">PROPOSED LINKED VIEW</text>
+  <rect x="64" y="684" width="1152" height="161" fill="#f8faff" stroke="#c5cfe3"/>
+  <text x="85" y="713" class="small muted">Same measure, common scale. Show coverage before allowing a comparison.</text>
+  <text x="85" y="752" class="body">Specialty A</text>
+  <text x="85" y="786" class="body">Specialty B</text>
+  <text x="85" y="820" class="body">Specialty C</text>
+  <g stroke="#00a67e" stroke-width="3" fill="#00a67e">
+    <path d="M302 746 H780 M302 740 V752 M780 740 V752" fill="none"/>
+    <path d="M407 780 H898 M407 774 V786 M898 774 V786" fill="none"/>
+    <path d="M267 814 H629 M267 808 V820 M629 808 V820" fill="none"/>
+    <circle cx="523" cy="746" r="5"/><circle cx="753" cy="780" r="5"/><circle cx="431" cy="814" r="5"/>
+  </g>
+  <text x="946" y="749" class="small muted">Line: state range</text>
+  <text x="946" y="780" class="small muted">Dot: chosen state</text>
+  <text x="946" y="813" class="small muted">Illustrative ranges only</text>
+
+  <circle cx="81" cy="880" r="17" fill="#df0067"/>
+  <text x="81" y="886" text-anchor="middle" class="label white">3</text>
+  <text x="109" y="888" class="heading">Record an observation with its evidence</text>
+  <text x="1216" y="886" text-anchor="end" class="small magenta">PROPOSED NOTE + EXPORT</text>
+  <rect x="64" y="907" width="1152" height="110" fill="white" stroke="#c5cfe3"/>
+  <text x="85" y="936" class="body muted">Observation: what differs, and what would you investigate next?</text>
+  <line x1="85" y1="952" x2="1194" y2="952" class="rule"/>
+  <text x="85" y="981" class="small muted">Keep: source year · geography · selected specialties · measures · suppression and coverage limits</text>
+  <rect x="988" y="927" width="206" height="32" rx="3" fill="#eff3ff" stroke="#1457d9"/>
+  <text x="1091" y="949" text-anchor="middle" class="small blue">Export comparison + note</text>
+  <text x="64" y="1048" class="small muted">Scope today: top 32 specialties per geography; state profiles for 18 leading national specialties.</text>
+  <text x="64" y="1072" class="small muted">Future work: expand or disclose coverage before linking arbitrary groups. This is descriptive analysis, not a care-quality score.</text>
+</svg>

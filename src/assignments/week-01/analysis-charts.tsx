@@ -1,5 +1,6 @@
 'use client';
 
+import { ChartViewport } from '@/components/analysis/chart-viewport';
 import { median } from 'd3-array';
 import { scaleLinear, scaleLog, scaleQuantize, scaleSqrt } from 'd3-scale';
 import type { Dataset, Specialty, SpecialtyProfile } from '@/lib/prescriber';
@@ -27,17 +28,17 @@ export function SpecialtyScatter({ specialties, selected, onSelect, lens }: { sp
   const selectedDatum = specialties.find((d) => d.specialty === selected);
   return <figure className="chart-panel">
     <div className="figure-head"><div><span className="figure-no">01</span><h2>{lens === 'economics' ? 'Cost per claim vs. claims per provider' : 'Opioid vs. antibiotic claim share'}</h2></div><p>One circle per specialty. Circle area shows provider records. {lens === 'economics' ? 'Axes use log scales.' : 'Axes begin at zero.'}</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="scatter-title scatter-desc" className="scatter">
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="scatter-title scatter-desc" className="scatter">
       <title id="scatter-title">Specialty comparison scatter plot</title><desc id="scatter-desc">Interactive scatter plot of the highest-cost specialties in the selected geography.</desc>
       {xTicks.map((tick) => <g key={`x-${tick}`}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{label(tick)}</text></g>)}
       {yTicks.map((tick) => <g key={`y-${tick}`}><line x1={m.left} x2={width - m.right} y1={y(tick)} y2={y(tick)} className="gridline"/><text x={m.left - 12} y={y(tick) + 4} textAnchor="end" className="tick">{lens === 'economics' ? short.format(tick) : `${oneDecimal.format(tick)}%`}</text></g>)}
       <line x1={x(xMedian)} x2={x(xMedian)} y1={m.top} y2={height - m.bottom} className="median-line"/><line x1={m.left} x2={width - m.right} y1={y(yMedian)} y2={y(yMedian)} className="median-line"/>
       <text x={x(xMedian) + 5} y={m.top + 12} className="median-label">specialty median</text>
-      {specialties.map((d) => { const active = d.specialty === selected; return <g key={d.specialty} transform={`translate(${x(xValue(d))},${y(yValue(d))})`} role="button" tabIndex={0} aria-label={`${d.specialty}, ${d.providers.toLocaleString()} providers`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)} className="mark-group"><circle r={r(d.providers)} className={active ? 'mark active' : 'mark'}/></g>; })}
+      {specialties.map((d) => { const active = d.specialty === selected; return <g key={d.specialty} transform={`translate(${x(xValue(d))},${y(yValue(d))})`} role="button" tabIndex={0} aria-label={`${d.specialty}, ${d.providers.toLocaleString()} providers`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(d.specialty); } }} className="mark-group"><circle r={r(d.providers)} className={active ? 'mark active' : 'mark'}/></g>; })}
       {selectedDatum && <g transform={`translate(${x(xValue(selectedDatum))},${y(yValue(selectedDatum))})`} className="active-label"><line y1={-r(selectedDatum.providers) - 3} y2={-r(selectedDatum.providers) - 20}/><rect x={-88} y={-r(selectedDatum.providers) - 50} width="176" height="25"/><text y={-r(selectedDatum.providers) - 33} textAnchor="middle">{selectedDatum.specialty.length > 27 ? `${selectedDatum.specialty.slice(0, 27)}…` : selectedDatum.specialty}</text></g>}
       <text x={(m.left + width - m.right) / 2} y={height - 13} textAnchor="middle" className="axis-label">{lens === 'economics' ? 'TOTAL DRUG COST / CLAIM →' : 'REPORTED OPIOID CLAIM SHARE →'}</text>
       <text transform={`translate(18 ${(m.top + height - m.bottom) / 2}) rotate(-90)`} textAnchor="middle" className="axis-label">{lens === 'economics' ? 'CLAIMS / PROVIDER →' : 'REPORTED ANTIBIOTIC CLAIM SHARE →'}</text>
-    </svg>
+    </svg></ChartViewport>
     <figcaption>Source: CMS Medicare Part D Prescribers by Provider, 2024. {lens === 'economics' ? 'Both axes use logarithmic scales.' : 'Axes begin at zero; suppressed category values are unavailable.'}</figcaption>
   </figure>;
 }
@@ -51,26 +52,26 @@ const rankFormat = (metric: RankMetric, value: number) => metric === 'cost' ? `$
 
 export function SpecialtyRanking({ specialties, metric, selected, onSelect }: { specialties: Specialty[]; metric: RankMetric; selected: string; onSelect: (value: string) => void }) {
   const width = 760, height = 470;
-  const m = { top: 20, right: 72, bottom: 42, left: 188 };
+  const m = { top: 20, right: 100, bottom: 42, left: 240 };
   const rows = [...specialties].sort((a, b) => rankValue(b, metric) - rankValue(a, metric)).slice(0, 12);
   const max = Math.max(...rows.map((d) => rankValue(d, metric)));
   const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / rows.length;
   return <figure className="chart-panel mini-chart">
     <div className="figure-head"><div><span className="figure-no">03</span><h2>Largest specialties</h2></div><p>Top 12 in the selected geography by {rankTitle(metric).toLowerCase()}.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${rankTitle(metric)} by specialty`}>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={`${rankTitle(metric)} by specialty`}>
       {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{rankFormat(metric, tick)}</text></g>)}
       {rows.map((d, i) => {
         const yy = m.top + i * step + step * .18;
         const active = d.specialty === selected;
         const label = d.specialty.length > 25 ? `${d.specialty.slice(0, 25)}…` : d.specialty;
-        return <g key={d.specialty} className="bar-row" role="button" tabIndex={0} aria-label={`${d.specialty}: ${rankFormat(metric, rankValue(d, metric))}`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)}>
+        return <g key={d.specialty} className="bar-row" role="button" tabIndex={0} aria-label={`${d.specialty}: ${rankFormat(metric, rankValue(d, metric))}`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(d.specialty); } }}>
           <text x={m.left - 10} y={yy + step * .34} textAnchor="end" className="state-label">{label}</text>
           <rect x={m.left} y={yy} width={Math.max(2, x(rankValue(d, metric)) - m.left)} height={step * .52} className={active ? 'rank-bar active' : 'rank-bar'}/>
           <text x={Math.min(width - 4, x(rankValue(d, metric)) + 8)} y={yy + step * .34} className="value-label">{rankFormat(metric, rankValue(d, metric))}</text>
         </g>;
       })}
-    </svg>
+    </svg></ChartViewport>
   </figure>;
 }
 
@@ -88,13 +89,13 @@ export function ConcentrationCurve({ specialties, totals, metric, selected, onSe
   const top10 = points[Math.min(9, points.length - 1)]?.share ?? 0;
   return <figure className="chart-panel mini-chart concentration-chart">
     <div className="figure-head"><div><span className="figure-no">02</span><h2>Cumulative specialty share</h2></div><p>Specialties ordered from largest to smallest by {metric === 'cost' ? 'total drug cost' : 'claims'}.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Cumulative share of ${metric} by specialty`}>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={`Cumulative share of ${metric} by specialty`}>
       {[0,.25,.5,.75,1].map((tick) => <g key={tick}><line x1={m.left} x2={width - m.right} y1={y(tick)} y2={y(tick)} className="gridline"/><text x={m.left - 10} y={y(tick) + 4} textAnchor="end" className="tick">{Math.round(tick * 100)}%</text></g>)}
       {x.ticks(5).map((tick) => <text key={tick} x={x(tick)} y={height - 22} textAnchor="middle" className="tick">{tick}</text>)}
       <path d={area} className="concentration-area"/><path d={line} className="concentration-line"/>
-      {points.map((point) => <circle key={point.datum.specialty} cx={x(point.rank)} cy={y(point.share)} r={point.datum.specialty === selected ? 6 : 3} className={point.datum.specialty === selected ? 'curve-point active' : 'curve-point'} tabIndex={0} role="button" aria-label={`${point.datum.specialty}: cumulative ${Math.round(point.share * 100)} percent at rank ${point.rank}`} onMouseEnter={() => onSelect(point.datum.specialty)} onFocus={() => onSelect(point.datum.specialty)} onClick={() => onSelect(point.datum.specialty)}/>) }
+      {points.map((point) => <circle key={point.datum.specialty} cx={x(point.rank)} cy={y(point.share)} r={point.datum.specialty === selected ? 6 : 3} className={point.datum.specialty === selected ? 'curve-point active' : 'curve-point'} tabIndex={0} role="button" aria-label={`${point.datum.specialty}: cumulative ${Math.round(point.share * 100)} percent at rank ${point.rank}`} onMouseEnter={() => onSelect(point.datum.specialty)} onFocus={() => onSelect(point.datum.specialty)} onClick={() => onSelect(point.datum.specialty)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(point.datum.specialty); } }}/>) }
       <text x={(m.left + width - m.right) / 2} y={height - 5} textAnchor="middle" className="axis-label">NUMBER OF SPECIALTIES INCLUDED →</text>
-    </svg>
+    </svg></ChartViewport>
     <figcaption><b>Top 5:</b> {Math.round(top5 * 100)}% · <b>Top 10:</b> {Math.round(top10 * 100)}% of all {metric === 'cost' ? 'drug cost' : 'claims'}.</figcaption>
   </figure>;
 }
@@ -108,35 +109,35 @@ export function SpecialtyComposition({ specialties, totalCost, selected, onSelec
   const x = scaleLinear().domain([0, 1]).range([30, width - 30]);
   return <figure className="chart-panel mini-chart composition-chart">
     <div className="figure-head"><div><span className="figure-no">04</span><h2>Drug-cost composition</h2></div><p>Share of the selected geography’s specialty total. The nine largest specialties are shown separately.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Drug cost share by specialty">
-      {positioned.map((segment, i) => <g key={segment.specialty} className="composition-group" role={segment.datum ? 'button' : undefined} tabIndex={segment.datum ? 0 : -1} aria-label={`${segment.specialty}: ${oneDecimal.format(segment.share * 100)} percent`} onMouseEnter={() => segment.datum && onSelect(segment.specialty)} onFocus={() => segment.datum && onSelect(segment.specialty)} onClick={() => segment.datum && onSelect(segment.specialty)}><rect x={x(segment.start)} y="35" width={Math.max(1, x(segment.start + segment.share) - x(segment.start))} height="72" className={segment.specialty === selected ? 'composition-segment active' : `composition-segment tone-${i % 2}`}/>{segment.share > .045 && <text x={x(segment.start + segment.share / 2)} y="77" textAnchor="middle" className="segment-label">{oneDecimal.format(segment.share * 100)}%</text>}</g>)}
-      {positioned.map((segment, i) => { const col = i < 5 ? 0 : 1; const row = i % 5; const xx = 32 + col * 365; const yy = 145 + row * 31; return <g key={`legend-${segment.specialty}`} transform={`translate(${xx},${yy})`} className="composition-group" role={segment.datum ? 'button' : undefined} tabIndex={segment.datum ? 0 : -1} onMouseEnter={() => segment.datum && onSelect(segment.specialty)} onFocus={() => segment.datum && onSelect(segment.specialty)} onClick={() => segment.datum && onSelect(segment.specialty)}><rect width="12" height="12" className={segment.specialty === selected ? 'composition-segment active' : `composition-segment tone-${i % 2}`}/><text x="20" y="10" className="composition-label">{i + 1}. {segment.specialty.length > 27 ? `${segment.specialty.slice(0,27)}…` : segment.specialty}</text><text x="345" y="10" textAnchor="end" className="composition-value">{oneDecimal.format(segment.share * 100)}%</text></g>; })}
-    </svg>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Drug cost share by specialty">
+      {positioned.map((segment, i) => <g key={segment.specialty} className="composition-group" role={segment.datum ? 'button' : undefined} tabIndex={segment.datum ? 0 : -1} aria-label={`${segment.specialty}: ${oneDecimal.format(segment.share * 100)} percent`} onMouseEnter={() => segment.datum && onSelect(segment.specialty)} onFocus={() => segment.datum && onSelect(segment.specialty)} onClick={() => segment.datum && onSelect(segment.specialty)} onKeyDown={(event) => { if (segment.datum && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onSelect(segment.specialty); } }}><rect x={x(segment.start)} y="35" width={Math.max(1, x(segment.start + segment.share) - x(segment.start))} height="72" className={segment.specialty === selected ? 'composition-segment active' : `composition-segment tone-${i % 2}`}/>{segment.share > .07 && <text x={x(segment.start + segment.share / 2)} y="77" textAnchor="middle" className="segment-label">{oneDecimal.format(segment.share * 100)}%</text>}</g>)}
+      {positioned.map((segment, i) => { const col = i < 5 ? 0 : 1; const row = i % 5; const xx = 32 + col * 365; const yy = 145 + row * 31; return <g key={`legend-${segment.specialty}`} aria-label={`${segment.specialty}: ${oneDecimal.format(segment.share * 100)} percent`} transform={`translate(${xx},${yy})`} className="composition-group" role={segment.datum ? 'button' : undefined} tabIndex={segment.datum ? 0 : -1} onMouseEnter={() => segment.datum && onSelect(segment.specialty)} onFocus={() => segment.datum && onSelect(segment.specialty)} onClick={() => segment.datum && onSelect(segment.specialty)} onKeyDown={(event) => { if (segment.datum && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onSelect(segment.specialty); } }}><rect width="12" height="12" className={segment.specialty === selected ? 'composition-segment active' : `composition-segment tone-${i % 2}`}/><text x="20" y="10" className="composition-label">{i + 1}. {segment.specialty.length > 27 ? `${segment.specialty.slice(0,27)}…` : segment.specialty}</text><text x="345" y="10" textAnchor="end" className="composition-value">{oneDecimal.format(segment.share * 100)}%</text></g>; })}
+    </svg></ChartViewport>
   </figure>;
 }
 
 export function CostProviderBalance({ specialties, totalCost, totalProviders, selected, onSelect }: { specialties: Specialty[]; totalCost: number; totalProviders: number; selected: string; onSelect: (value: string) => void }) {
   const width = 760, height = 470;
-  const m = { top: 25, right: 50, bottom: 48, left: 185 };
+  const m = { top: 25, right: 90, bottom: 48, left: 240 };
   const rows = specialties.map((d) => ({ datum: d, delta: d.cost / totalCost * 100 - d.providers / totalProviders * 100 })).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 12);
   const extent = Math.max(...rows.map((d) => Math.abs(d.delta)));
   const x = scaleLinear().domain([-extent, extent]).nice().range([m.left, width - m.right]);
   const step = (height - m.top - m.bottom) / rows.length;
   return <figure className="chart-panel mini-chart balance-chart">
     <div className="figure-head"><div><span className="figure-no">05</span><h2>Cost share minus provider share</h2></div><p>Positive values account for more drug cost than provider records; negative values account for less.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Difference between drug cost share and provider record share by specialty">
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Difference between drug cost share and provider record share by specialty">
       {x.ticks(5).map((tick) => <line key={`grid-${tick}`} x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/>)}
       <line x1={x(0)} x2={x(0)} y1={m.top} y2={height - m.bottom} className="zero-line"/>
       {x.ticks(5).map((tick) => <text key={tick} x={x(tick)} y={height - 17} textAnchor="middle" className="tick">{tick > 0 ? '+' : ''}{oneDecimal.format(tick)}pp</text>)}
-      {rows.map(({ datum, delta }, i) => { const yy = m.top + i * step + step * .2; const start = Math.min(x(0), x(delta)); return <g key={datum.specialty} className="bar-row" role="button" tabIndex={0} onMouseEnter={() => onSelect(datum.specialty)} onFocus={() => onSelect(datum.specialty)} onClick={() => onSelect(datum.specialty)} aria-label={`${datum.specialty}: ${oneDecimal.format(delta)} percentage points`}><text x={m.left - 10} y={yy + step * .32} textAnchor="end" className="state-label">{datum.specialty.length > 25 ? `${datum.specialty.slice(0,25)}…` : datum.specialty}</text><rect x={start} y={yy} width={Math.max(2, Math.abs(x(delta) - x(0)))} height={step * .5} className={`${delta >= 0 ? 'balance-bar positive' : 'balance-bar negative'}${datum.specialty === selected ? ' active' : ''}`}/><text x={x(delta)+(delta>=0?6:-6)} y={yy+step*.32} textAnchor={delta>=0?'start':'end'} className="value-label">{delta>0?'+':''}{oneDecimal.format(delta)}</text></g>; })}
+      {rows.map(({ datum, delta }, i) => { const yy = m.top + i * step + step * .2; const start = Math.min(x(0), x(delta)); return <g key={datum.specialty} className="bar-row" role="button" tabIndex={0} onMouseEnter={() => onSelect(datum.specialty)} onFocus={() => onSelect(datum.specialty)} onClick={() => onSelect(datum.specialty)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(datum.specialty); } }} aria-label={`${datum.specialty}: ${oneDecimal.format(delta)} percentage points`}><text x={m.left - 10} y={yy + step * .32} textAnchor="end" className="state-label">{datum.specialty.length > 25 ? `${datum.specialty.slice(0,25)}…` : datum.specialty}</text><rect x={start} y={yy} width={Math.max(2, Math.abs(x(delta) - x(0)))} height={step * .5} className={`${delta >= 0 ? 'balance-bar positive' : 'balance-bar negative'}${datum.specialty === selected ? ' active' : ''}`}/><text x={x(delta)+(delta>=0?6:-6)} y={yy+step*.32} textAnchor={delta>=0?'start':'end'} className="value-label">{delta>0?'+':''}{oneDecimal.format(delta)}</text></g>; })}
       <text x={m.left} y={height - 2} className="axis-label">← LOWER COST SHARE</text><text x={width - m.right} y={height - 2} textAnchor="end" className="axis-label">HIGHER COST SHARE →</text>
-    </svg>
+    </svg></ChartViewport>
   </figure>;
 }
 
 export function CategorySharePlot({ specialties, selected, onSelect }: { specialties: Specialty[]; selected: string; onSelect: (value: string) => void }) {
   const width = 760, height = 470;
-  const m = { top: 28, right: 45, bottom: 42, left: 188 };
+  const m = { top: 28, right: 45, bottom: 42, left: 240 };
   const rows = [...specialties].filter((d) => d.opioidShare > 0 || d.antibioticShare > 0).sort((a, b) => Math.max(b.opioidShare, b.antibioticShare) - Math.max(a.opioidShare, a.antibioticShare)).slice(0, 12);
   const max = Math.max(1, ...rows.flatMap((d) => [d.opioidShare, d.antibioticShare]));
   const x = scaleLinear().domain([0, max]).nice().range([m.left, width - m.right]);
@@ -144,21 +145,21 @@ export function CategorySharePlot({ specialties, selected, onSelect }: { special
   const selectedDatum = specialties.find((d) => d.specialty === selected) ?? specialties[0];
   return <figure className="chart-panel mini-chart">
     <div className="figure-head"><div><span className="figure-no">06</span><h2>Reported category shares</h2></div><p>Opioid and antibiotic claims as a share of all claims. Suppressed cells count as unavailable.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Opioid and antibiotic claim shares by specialty">
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Opioid and antibiotic claim shares by specialty">
       <g className="dot-legend" transform={`translate(${m.left},11)`}><circle r="5" className="category-dot opioid"/><text x="10" y="4">OPIOID</text><circle cx="83" r="5" className="category-dot antibiotic"/><text x="93" y="4">ANTIBIOTIC</text></g>
       {x.ticks(4).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 14} textAnchor="middle" className="tick">{oneDecimal.format(tick)}%</text></g>)}
       {rows.map((d, i) => {
         const yy = m.top + i * step + step / 2;
         const active = d.specialty === selected;
         const label = d.specialty.length > 25 ? `${d.specialty.slice(0, 25)}…` : d.specialty;
-        return <g key={d.specialty} className={active ? 'share-row active' : 'share-row'} role="button" tabIndex={0} aria-label={`${d.specialty}: ${oneDecimal.format(d.opioidShare)} percent opioid, ${oneDecimal.format(d.antibioticShare)} percent antibiotic`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)}>
+        return <g key={d.specialty} className={active ? 'share-row active' : 'share-row'} role="button" tabIndex={0} aria-label={`${d.specialty}: ${oneDecimal.format(d.opioidShare)} percent opioid, ${oneDecimal.format(d.antibioticShare)} percent antibiotic`} onMouseEnter={() => onSelect(d.specialty)} onFocus={() => onSelect(d.specialty)} onClick={() => onSelect(d.specialty)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(d.specialty); } }}>
           <text x={m.left - 10} y={yy + 4} textAnchor="end" className="state-label">{label}</text>
           <line x1={x(Math.min(d.opioidShare, d.antibioticShare))} x2={x(Math.max(d.opioidShare, d.antibioticShare))} y1={yy} y2={yy} className="share-link"/>
           <circle cx={x(d.opioidShare)} cy={yy} r={active ? 7 : 5.5} className="category-dot opioid"/>
           <circle cx={x(d.antibioticShare)} cy={yy} r={active ? 7 : 5.5} className="category-dot antibiotic"/>
         </g>;
       })}
-    </svg>
+    </svg></ChartViewport>
     <figcaption><b>{selectedDatum.specialty}:</b> {oneDecimal.format(selectedDatum.opioidShare)}% opioid · {oneDecimal.format(selectedDatum.antibioticShare)}% antibiotic.</figcaption>
   </figure>;
 }
@@ -173,7 +174,7 @@ export function SpecialtyFingerprint({ specialties, selected }: { specialties: S
     { label: 'Opioid share', value: (d: Specialty) => d.opioidShare, format: (v: number) => `${oneDecimal.format(v)}%` },
   ];
   const width = 760, height = 365;
-  const m = { top: 24, right: 55, bottom: 42, left: 180 };
+  const m = { top: 24, right: 75, bottom: 58, left: 200 };
   const x = scaleLinear().domain([0,100]).range([m.left,width - m.right]);
   const step = (height - m.top - m.bottom) / metrics.length;
   const ranked = metrics.map((metric) => {
@@ -183,11 +184,11 @@ export function SpecialtyFingerprint({ specialties, selected }: { specialties: S
   });
   return <figure className="chart-panel mini-chart fingerprint-chart">
     <div className="figure-head"><div><span className="figure-no">07</span><h2>{datum.specialty}</h2></div><p>Percentile among displayed specialties. Farther right means higher, not better.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Percentile profile for ${datum.specialty}`}>
-      {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 15} textAnchor="middle" className="tick">{tick}th</text></g>)}
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Percentile profile for ${datum.specialty}`}>
+      {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - 30} textAnchor="middle" className="tick">{tick}th</text></g>)}
       {ranked.map((metric, i) => { const yy = m.top + i * step + step / 2; return <g key={metric.label}><text x={m.left - 12} y={yy - 3} textAnchor="end" className="state-label">{metric.label}</text><text x={m.left - 12} y={yy + 13} textAnchor="end" className="raw-value">{metric.format(metric.raw)}</text><rect x={m.left} y={yy - 8} width={Math.max(2,x(metric.percentile)-m.left)} height="16" className={`fingerprint-bar metric-${i}`}/><circle cx={x(metric.percentile)} cy={yy} r="6" className={`fingerprint-dot metric-${i}`}/><text x={Math.min(width - 4,x(metric.percentile)+10)} y={yy + 4} className="value-label">{Math.round(metric.percentile)}th</text></g>; })}
-      <text x={(m.left + width - m.right) / 2} y={height - 2} textAnchor="middle" className="axis-label">PERCENTILE AMONG SPECIALTIES →</text>
-    </svg>
+      <text x={(m.left + width - m.right) / 2} y={height - 5} textAnchor="middle" className="axis-label">PERCENTILE AMONG SPECIALTIES →</text>
+    </svg></ChartViewport>
   </figure>;
 }
 
@@ -220,7 +221,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
   return <figure className="chart-panel tile-map-panel">
     <div className="figure-head"><div><span className="figure-no">08</span><h2>State and territory values</h2></div><p>Equal-area tiles keep small places clickable. Color is binned from low to high.</p></div>
     <div className="map-readout" aria-live="polite"><span>{active.name.toUpperCase()}</span><strong>{fmt(activeValue)}</strong><em>{Math.abs(delta).toFixed(1)}% {delta >= 0 ? 'above' : 'below'} the national specialty aggregate</em></div>
-    <svg viewBox="0 0 780 490" role="img" aria-label={`Tile map of ${metricTitle(metric)} for ${profile.specialty}`}>
+    <ChartViewport><svg viewBox="0 0 780 490" role="img" aria-label={`Tile map of ${metricTitle(metric)} for ${profile.specialty}`}>
       {stateTiles.map(([code, col, row]) => {
         const datum = byCode.get(code);
         const fill = datum ? color(metricValue(datum, metric)) : 'var(--no-data)';
@@ -230,7 +231,7 @@ export function StateTileMap({ profile, metric, selected, onSelect }: { profile:
         </g>;
       })}
       <g transform="translate(38,455)"><text className="legend-label" y="10">{fmt(min)}</text>{color.range().map((swatch, i) => <rect key={swatch} x={48 + i * 34} width="34" height="12" fill={swatch}/>)}<text className="legend-label" x="224" y="10">{fmt(max)}</text><text className="legend-label" x="315" y="10">{metricTitle(metric).toUpperCase()}</text></g>
-    </svg>
+    </svg></ChartViewport>
     <figcaption>Tile position is schematic. Armed Forces and foreign/unknown records are excluded from the map but remain in national totals.</figcaption>
   </figure>;
 }
@@ -246,12 +247,12 @@ export function StateComparison({ profile, metric }: { profile: SpecialtyProfile
   const formatter = metricFormatter(metric);
   return <figure className="chart-panel compact-chart">
     <div className="figure-head"><div><span className="figure-no">09</span><h2>Highest state aggregates</h2></div><p>Top 15 states and territories for {profile.specialty}. These are not quality scores.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`State comparison for ${profile.specialty}`}>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`State comparison for ${profile.specialty}`}>
       {x.ticks(5).map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height - m.bottom} className="gridline"/><text x={x(tick)} y={height - m.bottom + 22} textAnchor="middle" className="tick">{formatter(tick)}</text></g>)}
       <line x1={x(nationalValue)} x2={x(nationalValue)} y1={m.top} y2={height-m.bottom} className="national-line"/><text x={x(nationalValue)+5} y={m.top+10} className="national-label">US {formatter(nationalValue)}</text>
       {states.map((d, i) => { const yy = m.top + i * step + step / 2; return <g key={d.code}><text x={m.left - 12} y={yy + 4} textAnchor="end" className="state-label">{d.name}</text><line x1={m.left} x2={x(value(d))} y1={yy} y2={yy} className="stem"/><circle cx={x(value(d))} cy={yy} r="5.5" className="state-dot"/><text x={x(value(d)) + 11} y={yy + 4} className="value-label">{formatter(value(d))}</text></g>; })}
       <text x={(m.left + width - m.right) / 2} y={height - 12} textAnchor="middle" className="axis-label">{metric === 'costPerClaim' ? 'TOTAL DRUG COST / CLAIM' : metric === 'opioidShare' ? 'REPORTED OPIOID CLAIM SHARE' : 'CLAIMS / PROVIDER'}</text>
-    </svg>
+    </svg></ChartViewport>
   </figure>;
 }
 
@@ -263,28 +264,28 @@ export function DistributionHistogram({ data, active }: { data: Dataset; active:
   const y = scaleLog().domain([1, max]).range([height - m.bottom, m.top]);
   const step = (width - m.left - m.right) / distribution.bins.length;
   return <figure className="chart-panel mini-chart distribution-chart">
-    <div className="figure-head"><div><span className="figure-no">10</span><h2>{distribution.label}</h2></div><p>Provider-record counts by fixed bin. Bar height uses a log scale so the long tail stays visible.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Distribution of ${distribution.label}`}>
+    <div className="figure-head"><div><span className="figure-no">11</span><h2>{distribution.label}</h2></div><p>Provider-record counts by fixed bin. Bar height uses a log scale so the long tail stays visible.</p></div>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Distribution of ${distribution.label}`}>
       {y.ticks(5).filter((tick) => tick >= 1 && tick <= max).map((tick) => <g key={tick}><line x1={m.left} x2={width-m.right} y1={y(tick)} y2={y(tick)} className="gridline"/><text x={m.left-8} y={y(tick)+4} textAnchor="end" className="tick">{short.format(tick)}</text></g>)}
       {distribution.bins.map((bin, i) => { const barY = y(Math.max(1,bin.count)); return <g key={bin.label}><rect x={m.left + i * step + 3} y={barY} width={Math.max(2,step-6)} height={height-m.bottom-barY} className="distribution-bar"/><text x={m.left + i * step + step/2} y={height-m.bottom+18} textAnchor="middle" className="bin-label">{bin.label}</text><text x={m.left + i * step + step/2} y={barY-6} textAnchor="middle" className="bar-count">{short.format(bin.count)}</text></g>; })}
-    </svg>
+    </svg></ChartViewport>
     <figcaption>{data.meta.rows.toLocaleString()} provider records.</figcaption>
   </figure>;
 }
 
 export function FieldMissingnessPlot({ data }: { data: Dataset }) {
   const width = 760, height = 470;
-  const m = { top: 24, right: 42, bottom: 52, left: 190 };
+  const m = { top: 24, right: 80, bottom: 52, left: 240 };
   const rows = [...data.schema].sort((a,b) => b.missingRate - a.missingRate).slice(0,12);
   const x = scaleLinear().domain([0,100]).range([m.left,width-m.right]);
   const step = (height-m.top-m.bottom)/rows.length;
   return <figure className="chart-panel mini-chart missingness-chart">
-    <div className="figure-head"><div><span className="figure-no">12</span><h2>Fields with the most blanks</h2></div><p>Blank-cell rate for the 12 least complete fields. Orange dots show suppression-marker rate.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="CMS fields with the highest blank rates">
+    <div className="figure-head"><div><span className="figure-no">13</span><h2>Fields with the most blanks</h2></div><p>Blank-cell rate for the 12 least complete fields. Terracotta dots show suppression-marker rate.</p></div>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="CMS fields with the highest blank rates">
       {[0,25,50,75,100].map((tick) => <g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height-m.bottom} className="gridline"/><text x={x(tick)} y={height-18} textAnchor="middle" className="tick">{tick}%</text></g>)}
       {rows.map((field,i) => { const yy=m.top+i*step+step*.22; const markerRate=field.markers/data.meta.rows*100; const label=field.label.length>27?`${field.label.slice(0,27)}…`:field.label; return <g key={field.name}><text x={m.left-10} y={yy+step*.31} textAnchor="end" className="field-label">{label}</text><rect x={m.left} y={yy} width={Math.max(2,x(field.missingRate)-m.left)} height={step*.48} className="missing-bar"/><circle cx={x(markerRate)} cy={yy+step*.24} r="4.5" className="marker-dot"/><text x={Math.min(width-4,x(field.missingRate)+8)} y={yy+step*.31} className="value-label">{oneDecimal.format(field.missingRate)}%</text></g>; })}
       <text x={(m.left+width-m.right)/2} y={height-2} textAnchor="middle" className="axis-label">SHARE OF PROVIDER RECORDS →</text>
-    </svg>
+    </svg></ChartViewport>
   </figure>;
 }
 
@@ -295,11 +296,11 @@ export function FieldTypeBars({ data }: { data: Dataset }) {
   const x=scaleLinear().domain([0,Math.max(...counts.map(([,count])=>count))]).nice().range([m.left,width-m.right]);
   const step=(height-m.top-m.bottom)/counts.length;
   return <figure className="chart-panel mini-chart field-types-chart">
-    <div className="figure-head"><div><span className="figure-no">11</span><h2>Field classification</h2></div><p>All {data.meta.columns} source attributes classified for the Week 2 dataset documentation.</p></div>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Count of CMS fields by attribute classification">
+    <div className="figure-head"><div><span className="figure-no">12</span><h2>Field classification</h2></div><p>All {data.meta.columns} source attributes classified for the Week 2 dataset documentation.</p></div>
+    <ChartViewport><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Count of CMS fields by attribute classification">
       {x.ticks(6).map((tick)=><g key={tick}><line x1={x(tick)} x2={x(tick)} y1={m.top} y2={height-m.bottom} className="gridline"/><text x={x(tick)} y={height-18} textAnchor="middle" className="tick">{tick}</text></g>)}
       {counts.map(([label,count],i)=>{const yy=m.top+i*step+step*.22;return <g key={label}><text x={m.left-12} y={yy+step*.34} textAnchor="end" className="field-type-label">{label}</text><rect x={m.left} y={yy} width={x(count)-m.left} height={step*.52} className={i%2===0?'field-type-bar primary':'field-type-bar secondary'}/><text x={x(count)+9} y={yy+step*.34} className="field-type-count">{count}</text></g>;})}
       <text x={(m.left+width-m.right)/2} y={height-2} textAnchor="middle" className="axis-label">NUMBER OF FIELDS →</text>
-    </svg>
+    </svg></ChartViewport>
   </figure>;
 }

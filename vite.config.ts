@@ -2,7 +2,16 @@ import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
-import hostingConfig from './.openai/hosting.json';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+// A downloaded source copy or GitHub checkout must not require local hosting metadata.
+const hostingPath = resolve(process.cwd(), '.openai/hosting.json');
+const hostingConfig: { d1?: string | null; r2?: string | null } = existsSync(
+  hostingPath,
+)
+  ? JSON.parse(readFileSync(hostingPath, 'utf8'))
+  : {};
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   '00000000-0000-4000-8000-000000000000';
@@ -51,7 +60,7 @@ export default defineConfig(async () => {
       : undefined,
     plugins: [
       vinext(),
-      sites(),
+      ...(existsSync(hostingPath) ? [sites()] : []),
       cloudflare({
         viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
         config: localBindingConfig,

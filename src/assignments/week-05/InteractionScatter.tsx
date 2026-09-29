@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useRef, useState, type PointerEvent } from 'react';
+import { FaIcon } from '@/components/fa-icon';
 import { median } from 'd3-array';
 import { scaleLinear, scaleLog, scaleSqrt } from 'd3-scale';
 import type { Specialty } from '@/lib/prescriber';
@@ -46,7 +47,7 @@ function correlation(rows: Specialty[], transform: (value: number) => number) {
   return spreadX && spreadY ? cross / Math.sqrt(spreadX * spreadY) : null;
 }
 
-export function InteractionScatter({ specialties, geography, geographyCost, selected, onSelect, lens, axisScale, zoom, zoomTarget }: {
+export function InteractionScatter({ specialties, geography, geographyCost, selected, onSelect, lens, axisScale, zoom, zoomTarget, onCompareGroup }: {
   specialties: Specialty[];
   geography: string;
   geographyCost: number;
@@ -56,6 +57,7 @@ export function InteractionScatter({ specialties, geography, geographyCost, sele
   axisScale: AxisScale;
   zoom: ZoomLevel;
   zoomTarget: string;
+  onCompareGroup?: (names: string[]) => void;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [mode, setMode] = useState<'inspect' | 'group'>('inspect');
@@ -132,9 +134,9 @@ export function InteractionScatter({ specialties, geography, geographyCost, sele
   };
 
   return <figure className="chart-panel revised-scatter">
-    <div className="figure-head"><div><span className="figure-no">01 · WEEK 05 INTERACTION</span><h2>{lens === 'economics' ? 'Compare cost and prescribing volume' : 'Compare reported drug-category shares'}</h2></div><p>Collect a group of specialties, then compare their exact values below.</p></div>
+    <div className="figure-head"><div><span className="figure-no">01 · SPECIALTY SCATTERPLOT</span><h2>{lens === 'economics' ? 'Compare cost and prescribing volume' : 'Compare reported drug-category shares'}</h2></div><p>Select specialties to compare their exact values below.</p></div>
     <div className="selection-toolbar">
-      <div className="mode-buttons" role="group" aria-label="Chart interaction"><button type="button" aria-pressed={mode === 'inspect'} onClick={() => { setMode('inspect'); cancelDrag(); }}>Inspect</button><button type="button" aria-pressed={mode === 'group'} onClick={() => { setMode('group'); cancelDrag(); }}>Select group</button></div>
+      <div className="mode-buttons" role="group" aria-label="Chart interaction"><button type="button" aria-pressed={mode === 'inspect'} onClick={() => { setMode('inspect'); cancelDrag(); }}><FaIcon name="inspect"/> Inspect</button><button type="button" aria-pressed={mode === 'group'} onClick={() => { setMode('group'); cancelDrag(); }}><FaIcon name="group"/> Select group</button></div>
       <p id={`${chartId}-instructions`}>{mode === 'group' ? 'Drag a box to replace the group. Click a circle to add or remove it. Escape cancels a drag.' : 'Hover or focus a circle for details. Choose Select group to drag a comparison box.'} <a href={`#${chartId}-choose`}>Or choose by name ↓</a></p>
     </div>
     <div className="scatter-viewport"><svg viewBox={`0 0 ${width} ${height}`} role="group" aria-labelledby={`${chartId}-title ${chartId}-desc`} aria-describedby={`${chartId}-instructions`} className={`scatter ${mode === 'group' ? 'group-mode' : ''}`}
@@ -175,13 +177,14 @@ export function InteractionScatter({ specialties, geography, geographyCost, sele
       <line x1={right - 184} x2={right - 154} y1={height - 53} y2={height - 53} className="median-line"/><text x={right - 146} y={height - 49} className="plot-legend">Specialty medians</text>
     </svg></div>
     <section className="group-comparison" aria-labelledby={`${chartId}-group-heading`}>
-      <div className="comparison-heading"><h3 id={`${chartId}-group-heading`}>Your comparison group</h3><button type="button" disabled={!members.length} onClick={() => setMembers([])}>Clear group</button></div>
-      <p role="status" className="group-status">{rows.length} of {specialties.length} plotted specialties selected{zoom > 1 ? ` · ${rows.filter((row) => !visible.includes(row)).length} selected outside this zoom` : ''}. <span className="group-key">Purple = in group</span>; dark outline = inspected.</p>
+      <div className="comparison-heading"><h3 id={`${chartId}-group-heading`}>Your comparison group</h3><button type="button" disabled={!members.length} onClick={() => setMembers([])}><FaIcon name="reset"/> Clear group</button></div>
+      <p role="status" className="group-status">{rows.length} of {specialties.length} plotted specialties selected{zoom > 1 ? ` · ${rows.filter((row) => !visible.includes(row)).length} selected outside this zoom` : ''}. <span className="group-key">Teal = in group</span>; dark outline = inspected.</p>
       {rows.length > 0 ? <>
         <dl className="group-metrics"><div><dt>Group cost / claim</dt><dd>{totals.costPerClaim === null ? '—' : `$${decimal.format(totals.costPerClaim)}`}</dd></div><div><dt>Group claims / provider</dt><dd>{totals.claimsPerProvider === null ? '—' : decimal.format(totals.claimsPerProvider)}</dd></div><div><dt>Share of {geography} cost</dt><dd>{totals.costShare === null ? '—' : `${decimal.format(totals.costShare)}%`}</dd></div></dl>
         <div className="comparison-sort"><label htmlFor={`${chartId}-sort`}>Order rows</label><select id={`${chartId}-sort`} value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="costPerClaim">Cost / claim ↓</option><option value="claimsPerProvider">Claims / provider ↓</option><option value="name">Specialty A–Z</option></select></div>
         <div className="comparison-table-wrap" tabIndex={0} role="region" aria-label="Scrollable selected specialty comparison"><table className="comparison-table"><caption>{geography} · 2024 · selected specialty aggregates</caption><thead><tr><th scope="col">Specialty</th><th scope="col">Provider records</th><th scope="col">Claims</th><th scope="col">Cost / claim</th><th scope="col">Claims / provider</th></tr></thead><tbody>{rows.map((d) => <tr key={d.specialty}><th scope="row"><button type="button" onClick={() => onSelect(d.specialty)}>{d.specialty}</button></th><td>{d.providers.toLocaleString()}</td><td>{d.claims.toLocaleString()}</td><td>${decimal.format(d.costPerClaim)}</td><td>{decimal.format(d.claims / d.providers)}</td></tr>)}</tbody></table></div>
         <p className="comparison-note">Group ratios use summed cost, claims, and provider records—not averages of specialty ratios. Cost share uses all specialties in {geography}, including those not plotted.</p>
+        {onCompareGroup && <div className="group-handoff"><button type="button" onClick={() => onCompareGroup(members)}>Compare this group across states →</button><span>State profiles are available for the 18 leading national specialties.</span></div>}
       </> : <p className="empty-comparison">Which specialties combine high cost with low volume? Select a group to examine the differences.</p>}
       <details id={`${chartId}-choose`} className="name-selection"><summary>Choose specialties by name (keyboard &amp; touch)</summary><div className="specialty-choices">{[...specialties].sort((a, b) => a.specialty.localeCompare(b.specialty)).map((d) => <label key={d.specialty}><input type="checkbox" checked={members.includes(d.specialty)} onChange={() => toggle(d.specialty)}/><span>{d.specialty}</span></label>)}</div></details>
     </section>

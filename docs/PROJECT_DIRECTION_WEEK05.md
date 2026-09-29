@@ -1,31 +1,6 @@
 # Medicare Part D explorer: updated project proposal
 
-Week 06 · Project V1 · September 29, 2026
-
-## Project V1 — implemented comparison workflow
-
-[Open Week 6](https://sd7777777.github.io/data-visualization-student-starter/#week-6) · [Week 6 source and walkthrough](../src/assignments/week-06/README.md) · [Preserved Week 5 proposal](PROJECT_DIRECTION_WEEK05.md)
-
-**Version:** Week 6 Project V1, September 29, 2026. Use the Week 6 link above to open the implemented workflow.
-
-The Week 5 sketch proposed a connected sequence: select specialties, compare places, and record evidence. Project V1 implements that core concept. A reader can carry a group into geographic comparisons, inspect exact values in a matrix, distribution and paired chart, and save a source-linked observation in the field notebook. The local explorer also includes a comparison finder and ten alternative views; the Week 6 entry focuses on the comparison-to-evidence workflow.
-
-The new refinement adds three explicit starting questions: primary-care cost per claim in Massachusetts/New York, cancer-specialty claims per provider record in California/Texas, and specialty ranks within a selected group in Florida/New York. Each example resets the complete comparison settings, opens the relevant paired chart, and leaves saved notebook entries intact. The examples are questions, not prewritten findings. They make the core interaction approachable without requiring a reader to configure every filter first.
-
-![Week 6 Project V1: guided questions leading into the linked geographic comparison workspace.](assets/week-06-project-v1.png)
-
-![Week 6 primary-care comparison with exact values for Massachusetts and New York.](assets/week-06-comparison.png)
-
-### Review walkthrough
-
-1. Open Week 6 and choose **Primary care · MA / NY**. The paired chart shows three specialties with cost per claim and a minimum of 50 provider records.
-2. Inspect both places, change the measure, and use the matrix/distribution to put the difference in context. Missing or excluded values remain visible as coverage limitations.
-3. Open **Field notebook**, capture the current comparison, and write an observation. Capture freezes the evidence; subsequent chart changes do not silently rewrite it.
-4. Save the discovery, reopen its comparison, or download a portable notebook backup. Saved notes are local to the browser unless exported.
-
-No new peer feedback was supplied for this revision. The refinements build on the earlier legibility feedback and on local interaction checks; they are not a substitute for a reader study.
-
-## Earlier proposal and design rationale
+Week 05 · Updated Sketches · September 2026
 
 ## Direction and audience
 
@@ -82,31 +57,28 @@ The ten-record provider detail layer is limited context, not a complete specialt
 
 ![Proposed end-of-course comparison workflow, with a specialty selection, linked metrics, geographic comparison, and an evidence note. The sketch uses illustrative placeholders, not measured data.](assets/week-05-north-star.svg)
 
-**Historical Week 5 design sketch; not an application screenshot.** The core geographic comparison and evidence-note sequence is now implemented in Week 6. The new sketch connects three steps on the existing single page: build a specialty group, test the comparison across geography, and record an observation with its source and limits. It uses illustrative specialty names and mark positions, not analytical findings.
+**Proposed end-of-course design; not a screenshot of implemented features.** The new sketch connects three steps on the existing single page: build a specialty group, test the comparison across geography, and record an observation with its source and limits. It uses illustrative specialty names and mark positions, not analytical findings.
 
 The ambitious addition is continuity between those steps. Selected specialties would remain recognizable throughout the comparison. Geographic ranges would help a reader check whether an apparent national difference persists across states. An evidence note would capture the geography, year, selected measures, and interpretation limits alongside the reader's observation.
 
-### Built through Week 6
+### Built now
 
 - A one-page D3/SVG explorer with geography and measure controls, exact-value inspection, and preserved weekly source files.
 - Week 04 scale switching, zoom, chart-title and axis improvements, and hover-only labeling.
 - Week 05 rectangular brushing, keyboard-accessible selection by name, and linked comparisons using selected totals.
 - Python preprocessing and a static GitHub Pages deployment workflow.
-- Coordinated geographic matrix, distribution, value/rank comparison, coverage thresholds, and complete-profile comparison finder.
-- Fixed evidence capture, browser-local notebook, shareable comparison settings, text/PNG exports, and portable JSON import/export.
-- Week 6 guided starting questions with full comparison-state reset and direct chart focus.
-- A state-boundary map alongside alternative encodings for exploration.
 
 ### Proposed next
 
-- Evaluate the implemented select → compare → record workflow with a reader and revise the controls based on observed difficulties.
-- Expand the state-profile subset only after checking coverage; current geography comparisons remain limited to the 18 retained national specialties.
+- Carry a selected group into coordinated geographic comparisons. The current state-profile subset must be expanded or its limits shown before supporting arbitrary specialties.
+- Let readers save or export an observation with the comparison settings and CMS source. This evidence-note export is not implemented.
 - Add a small number of carefully checked annotations. No trend or causal claim is implied by this sketch.
+- Evaluate a state-boundary map against the current schematic tiles; use it only if boundaries improve the geographic task.
 - Consider multi-year comparison after verifying consistent fields, definitions, and transformations across releases.
 
 ## Source organization
 
-The original explorer and charts live in `src/assignments/week-01`; Week 02 holds data-preparation assignment source; Week 03 preserves the first-visual export; Week 04 contains the legibility copy; Week 05 contains the interaction revision; and Week 06 assembles the refined comparison workflow through `ProjectV1.tsx`, reusing the shared chart and notebook components. This proposal and its screenshots/sketch live in `docs/`. The repository preserves Curran's starter history and deploys to the existing GitHub Pages site.
+The original explorer and charts live in `src/assignments/week-01`; Week 02 holds data-preparation assignment source; Week 03 preserves the first-visual export; Week 04 contains the legibility copy; and Week 05 contains the interaction revision. This proposal and its screenshots/sketch live in `docs/`. The repository preserves Curran's starter history and deploys to the existing GitHub Pages site.
 
 ## Validation
 

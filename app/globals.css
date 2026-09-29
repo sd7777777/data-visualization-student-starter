@@ -1,16 +1,25 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import './geography-studio.css';
+@import './explorer-refresh.css';
+@import './wonder-lab.css';
+@import './scroll-story.css';
+@import './discovery-tools.css';
+@import './field-notebook.css';
+@import './field-theme.css';
+@import './research-workflow.css';
+@import './project-v1.css';
 
 @custom-variant dark (&:is(.dark *));
 @theme inline { --color-background:var(--paper); --color-foreground:var(--ink); --font-sans:var(--font-body); --font-mono:var(--font-data); --color-ring:var(--link); --color-input:var(--rule); --color-border:var(--rule); --color-popover:white; --color-popover-foreground:var(--ink); --color-primary:var(--link); --color-primary-foreground:white; --color-secondary:var(--wash); --color-secondary-foreground:var(--ink); --color-muted:var(--wash); --color-muted-foreground:var(--muted); --color-accent:var(--mint-wash); --color-accent-foreground:var(--ink); --radius-sm:0; --radius-md:0; --radius-lg:0; --radius-xl:0; }
 
-:root { --paper:#eff3ff; --panel:#fff; --ink:#101a38; --muted:#4a5874; --rule:#8ea2cf; --strong-rule:#667aa7; --grid:#dce5f8; --link:#064ee8; --purple:#6429d8; --navy:#1457d9; --teal:#00a67e; --orange:#df0067; --gold:#ffb000; --wash:#e7e4ff; --mint-wash:#dff9f0; --sun-wash:#fff1ad; --no-data:#dce2ef; --font-body:Arial,Helvetica,sans-serif; --font-data:Arial,Helvetica,sans-serif; }
+:root { --paper:#f8f7f0; --panel:#fff; --ink:#203e36; --muted:#586b63; --rule:#b8c7bb; --strong-rule:#80998a; --grid:#e9ede4; --link:#176558; --purple:#176558; --navy:#497b91; --teal:#258572; --orange:#ac553e; --gold:#c7984b; --wash:#e7eee5; --mint-wash:#edf3ec; --sun-wash:#f4e4bc; --no-data:#e0e4dc; --font-body:Arial,Helvetica,sans-serif; --font-data:Arial,Helvetica,sans-serif; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 body { margin:0; min-width:320px; background:var(--paper); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.45; }
 a { color:var(--link); text-decoration:underline; text-underline-offset:2px; }
-a:visited { color:#7b1fa2; }
+a:visited { color:#176558; }
 ::selection { background:var(--sun-wash); }
 .loading { min-height:100vh; display:grid; place-items:center; font:700 13px var(--font-data); }
 
@@ -66,7 +75,7 @@ a:visited { color:#7b1fa2; }
 .control-rail [data-slot="select-trigger"],.lab-controls [data-slot="select-trigger"] { min-width:230px; height:38px; border:1px solid #777; border-radius:0; background:#fff; font-size:14px; }
 [data-slot="tabs-list"] { height:38px; border:1px solid #999; border-radius:0; background:#fff; padding:0; }
 [data-slot="tabs-trigger"] { min-height:36px; border-radius:0; padding:0 13px; font-size:13px; }
-[data-slot="tabs-trigger"][data-state="active"] { background:var(--purple); color:#fff; box-shadow:none; }
+[data-slot="tabs-trigger"][data-active] { background:var(--purple); color:#fff; box-shadow:none; }
 .control-rail>p { margin:0 0 8px auto; color:var(--muted); font-size:13px; }
 .revision-line { margin:0 0 10px; padding:7px 10px; display:flex; flex-wrap:wrap; gap:5px 14px; border-bottom:2px solid var(--purple); font-size:13px; scroll-margin-top:10px; }
 .revision-line b { color:var(--purple); font-size:12px; }

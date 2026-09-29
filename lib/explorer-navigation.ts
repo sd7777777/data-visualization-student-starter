@@ -1,0 +1,100 @@
+import type { FaIconName } from '@/components/fa-icon';
+
+export const chapters: [string, string, FaIconName][] = [
+  ['week-3', 'Specialties', 'chart'],
+  ['wonder-lab', 'Wonder lab', 'shuffle'],
+  ['place', 'Compare places', 'compare'],
+  ['scale', 'Concentration', 'cost'],
+  ['composition', 'Cost share', 'share'],
+  ['mix', 'Clinical mix', 'clinical'],
+  ['records', 'Records', 'records'],
+  ['data', 'Data & methods', 'data'],
+  ['scroll-story', 'Guided overview', 'book'],
+  ['task-analysis', 'Tasks', 'tasks'],
+  ['validation', 'Validation', 'validate'],
+];
+
+export const wonderModes = [
+  {
+    id: 'map',
+    icon: 'place',
+    name: 'State contours',
+    alias: 'State map',
+    eyebrow: 'GEOGRAPHY',
+    description: 'Compare state values with the national aggregate.',
+  },
+  {
+    id: 'mosaic',
+    icon: 'fields',
+    name: 'Spending mosaic',
+    alias: 'Specialty shares',
+    eyebrow: 'COMPOSITION',
+    description: 'Compare shares of records, claims, or drug cost by area.',
+  },
+  {
+    id: 'skyline',
+    icon: 'fields',
+    name: 'Cost skyline',
+    alias: 'Volume × cost',
+    eyebrow: 'COST DRIVERS',
+    description: 'Rectangle width shows claims; height shows cost per claim.',
+  },
+  {
+    id: 'concentration',
+    icon: 'explore',
+    name: 'Concentration lens',
+    alias: 'Cumulative shares',
+    eyebrow: 'CONCENTRATION',
+    description: 'Compare cumulative shares in the same specialty order.',
+  },
+  {
+    id: 'hex',
+    icon: 'place',
+    name: 'Hex atlas',
+    alias: 'State hexagons',
+    eyebrow: 'GEOGRAPHY',
+    description: 'Compare states using size and national-relative color.',
+  },
+  {
+    id: 'petals',
+    icon: 'clinical',
+    name: 'State garden',
+    alias: 'State profiles',
+    eyebrow: 'FOUR MEASURES',
+    description: 'Compare state percentiles across four measures.',
+  },
+  {
+    id: 'ridges',
+    icon: 'fields',
+    name: 'Claim mountains',
+    alias: 'State distributions',
+    eyebrow: 'DISTRIBUTIONS',
+    description: 'Compare distributions of state values across specialties.',
+  },
+  {
+    id: 'currents',
+    icon: 'share',
+    name: 'Share currents',
+    alias: 'Share comparison',
+    eyebrow: 'COMPOSITION',
+    description:
+      'Compare a specialty’s shares of provider records, claims, and cost.',
+  },
+  {
+    id: 'orbit',
+    icon: 'place',
+    name: 'State orbit',
+    alias: 'National differences',
+    eyebrow: 'NATIONAL BENCHMARK',
+    description: 'Compare each state with the national aggregate.',
+  },
+  {
+    id: 'weave',
+    icon: 'compare',
+    name: 'Rank weave',
+    alias: 'Specialty ranks',
+    eyebrow: 'RANKING',
+    description: 'Compare specialty ranks across four measures.',
+  },
+] as const;
+export type WonderMode = (typeof wonderModes)[number]['id'];

@@ -56,7 +56,7 @@ docs/
   deploy-pages.yml          GitHub Pages deployment
 ```
 
-The public site is one page. Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
+The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas route. Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
 
 ## Canvas assignment map
 
@@ -66,6 +66,7 @@ The public site is one page. Assignment source folders remain separate so new wo
 - **Week 4 — Legibility and Validation:** a preserved copy of the first visual, improved axes and chart title, linear/log scale comparison, selected-point zoom, hover-only labeling, and a four-level validation plan.
 - **Week 5 — Interaction and Updated Sketches:** a new copy of Week 4 adds rectangle selection, keyboard/touch selection by name, linked exact-value comparison, and weighted group summaries. The [updated proposal](docs/PROJECT_DIRECTION.md) includes screenshots and a new end-of-course sketch.
 - **Week 6 — Project V1:** [guided comparison workflow](src/assignments/week-06/README.md) with three starting questions, linked geographic views, and a field notebook. [Open Week 6](https://sd7777777.github.io/data-visualization-student-starter/#week-6). The [project document](docs/PROJECT_DIRECTION.md) now distinguishes the implemented workflow from future evaluation.
+- **Week 7 — Recreate an Inspirational Piece:** [Trillion Atlas](src/assignments/week-07/README.md), a historical recreation of McCandless’s proportional money rectangles with type filters, ranked bars, source context, pair comparisons and CSV export. Local draft: `http://localhost:3017/week-7`; static export: `week-7.html`. Prepared for GitHub Pages; Canvas submission remains with the student.
 - **Project extensions:** Figures 02–13 continue the same dataset story and are labeled separately from the weekly milestones. The [linked geography workspace](docs/GEOGRAPHY_WORKSPACE.md) replaces the earlier tile map and ranked-state view; their source remains preserved.
 
 ## Work locally

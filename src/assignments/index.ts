@@ -2,11 +2,25 @@ export interface AssignmentEntry {
   id: string;
   name: string;
   navLabel: string;
-  path: '/' | '/#data' | '/#week-3' | '/#week-4' | '/#week-5' | '/#week-6';
+  path:
+    | '/'
+    | '/#data'
+    | '/#week-3'
+    | '/#week-4'
+    | '/#week-5'
+    | '/#week-6'
+    | '/week-7';
   sourceDirectory: string;
 }
 
 export const assignments: AssignmentEntry[] = [
+  {
+    id: 'week-07',
+    name: 'Recreate an Inspirational Piece — Trillion Atlas',
+    navLabel: 'Trillion Atlas',
+    path: '/week-7',
+    sourceDirectory: 'src/assignments/week-07',
+  },
   {
     id: 'week-01',
     name: 'Repository Setup / Prescriber Explorer',

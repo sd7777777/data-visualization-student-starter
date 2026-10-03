@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -21,7 +22,16 @@ def main() -> None:
         if not path.is_file() or path.suffix not in {".html", ".rsc", ".js", ".json"}:
             continue
         text = path.read_text(encoding="utf-8")
-        updated = text.replace("/_next/", prefix)
+        # Root URLs occur in HTML/RSC and module metadata. Avoid prefixing a
+        # previously prepared URL again when the script is rerun.
+        updated = re.sub(r"(?<![\w/-])/_next/", prefix, text)
+        if path.suffix == ".js":
+            # Vite's preload map stores `_next/...` without a leading slash;
+            # its runtime adds that slash. These must carry the project name
+            # too, or a separately loaded route can fail during hydration.
+            updated = re.sub(
+                r"([\"'`])_next/", rf"\g<1>{repository}/_next/", updated
+            )
         if updated != text:
             path.write_text(updated, encoding="utf-8")
             changed += 1

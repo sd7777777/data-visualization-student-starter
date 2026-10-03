@@ -766,9 +766,23 @@ export default function PartDFieldNotes() {
       <details className="course-index">
         <summary>
           <FaIcon name="book" /> Coursework trail{' '}
-          <span>Weeks 01–06 · sources and assignment milestones</span>
+          <span>Weeks 01–07 · sources and assignment milestones</span>
         </summary>
         <nav className="week-directory" aria-label="Canvas assignment index">
+          <a
+            href={
+              process.env.NODE_ENV === 'development'
+                ? './week-7'
+                : './week-7.html'
+            }
+          >
+            <b>Week 07</b>
+            <span>Trillion Atlas</span>
+            <small>
+              inspiration recreation · proportional areas · interactive
+              comparisons
+            </small>
+          </a>
           <a href="#week-1">
             <b>Week 01</b>
             <span>Repository Setup</span>

@@ -1,4 +1,4 @@
-export type Kind = 'flow' | 'stock' | 'estimate';
+export type Kind = 'flow' | 'stock' | 'estimate' | 'total';
 export interface MoneyItem {
   id: string;
   label: string;
@@ -16,11 +16,17 @@ export const kindInfo: Record<
   Kind,
   { label: string; color: string; ink: string; explanation: string }
 > = {
+  total: {
+    label: 'Multiyear totals',
+    color: '#e9ca70',
+    ink: '#342714',
+    explanation: 'Losses, spending or changes accumulated over several years.',
+  },
   flow: {
-    label: 'Annual activity',
+    label: 'Activity',
     color: '#c9ee71',
     ink: '#152214',
-    explanation: 'Money spent or output produced over a year.',
+    explanation: 'Activity measured over a stated or unspecified period.',
   },
   stock: {
     label: 'Accumulated value',
@@ -29,10 +35,10 @@ export const kindInfo: Record<
     explanation: 'Wealth, debt or asset value at a point in time.',
   },
   estimate: {
-    label: 'Investment estimates',
+    label: 'Costs / estimates',
     color: '#ffb391',
     ink: '#451d10',
-    explanation: 'Proposed investment over a stated or unspecified horizon.',
+    explanation: 'Costs and investment estimates with varying horizons.',
   },
 };
 // Transcribed from the dated 16 August 2018 graphic linked by the author.
@@ -219,6 +225,123 @@ export const items: MoneyItem[] = [
     basis: 'Investment estimate · before 2030',
     note: 'The reference describes infrastructure investment required before 2030. It is not an annual budget.',
   },
+  {
+    id: 'apple',
+    label: 'Apple — trillion-dollar reference',
+    short: 'Apple',
+    value: 1,
+    kind: 'stock',
+    basis: 'Reference valuation · 2018 graphic',
+    note: 'The Apple-logo $1 trillion block is the reference unit shown in the original graphic.',
+  },
+  {
+    id: 'corruption',
+    label: 'Corruption in developing countries',
+    short: 'Corruption',
+    value: 1,
+    kind: 'flow',
+    basis: 'Activity estimate · period unspecified',
+    note: 'The original gives no accounting definition or observation period for this estimate.',
+  },
+  {
+    id: 'sdgs',
+    label: 'Reach the UN Sustainable Development Goals',
+    short: 'UN development goals',
+    value: 1.4,
+    kind: 'estimate',
+    basis: 'Cost estimate · horizon unspecified',
+    note: 'The original does not specify the spending period or geographic coverage.',
+  },
+  {
+    id: 'laundering',
+    label: 'Money laundered globally',
+    short: 'Money laundering',
+    value: 1.6,
+    kind: 'flow',
+    basis: 'Activity estimate · period unspecified',
+    note: 'The original does not supply an observation date or period.',
+  },
+  {
+    id: 'fashion',
+    label: 'Global fashion industry',
+    short: 'Fashion industry',
+    value: 2.4,
+    kind: 'flow',
+    basis: 'Industry activity · basis unspecified',
+    note: 'The image does not specify whether this is revenue or another industry measure.',
+  },
+  {
+    id: 'internet',
+    label: 'Top 20 internet companies',
+    short: 'Top 20 internet firms',
+    value: 3,
+    kind: 'stock',
+    basis: 'Company value · basis unspecified',
+    note: 'The original does not define the valuation method or list the companies.',
+  },
+  {
+    id: 'wars',
+    label: 'Cost of the Iraq and Afghanistan wars',
+    short: 'Iraq & Afghanistan wars',
+    value: 3,
+    kind: 'total',
+    basis: 'Cumulative cost · start/end unspecified',
+    note: 'The source does not state the dates or included cost categories.',
+  },
+  {
+    id: 'fx',
+    label: 'Daily foreign exchange market',
+    short: 'Foreign exchange',
+    value: 5.3,
+    kind: 'flow',
+    basis: 'Daily activity · 2018 reference',
+    note: 'A daily turnover figure, not annual output. Repeated transactions are counted; this is not a stock of wealth.',
+  },
+  {
+    id: 'developing-debt',
+    label: 'Debt of low- and middle-income countries',
+    short: 'Developing-country debt',
+    value: 6.7,
+    kind: 'stock',
+    basis: 'Debt snapshot · 2018 reference',
+    note: 'Retains the label in the original; the image does not provide the observation date or debt coverage.',
+  },
+  {
+    id: 'crisis',
+    label: 'Cost of the 2007–08 financial crisis',
+    short: 'Financial crisis losses',
+    value: 15,
+    kind: 'total',
+    basis: 'Cumulative losses · 2007–08 crisis',
+    note: 'The original names the crisis but does not specify the full period over which losses were estimated.',
+  },
+  {
+    id: 'eu-debt',
+    label: 'EU governments’ debt',
+    short: 'EU government debt',
+    value: 15.2,
+    kind: 'stock',
+    basis: 'Debt snapshot · 2018 reference',
+    note: 'Historical source value; the observation date and included debt instruments are not given in the image.',
+  },
+  {
+    id: 'offshore',
+    label: 'Wealth hidden offshore by the rich',
+    short: 'Offshore wealth',
+    value: 26.5,
+    kind: 'stock',
+    basis: 'Wealth estimate · 2018 reference',
+    note: 'An estimate from the original graphic; uncertainty bounds and asset coverage are not supplied.',
+  },
+  {
+    id: 'debt-increase',
+    label: 'Worldwide debt increase since the financial crisis',
+    short: 'Debt increase since crisis',
+    value: 57,
+    kind: 'total',
+    basis: 'Accumulated change · since financial crisis',
+    note: 'A change in debt over time, not an additional independent stock. Do not add it to total global debt.',
+  },
 ];
 export const amount = (value: number) =>
   `$${Number(value.toFixed(2)).toLocaleString('en-US')}T`;
@@ -265,4 +388,34 @@ export function comparison(a: MoneyItem, b: MoneyItem) {
     sameKind: a.kind === b.kind,
     sameBasis: a.basis === b.basis,
   };
+}
+
+/** Group by descriptive type without changing the common area-per-dollar scale. */
+export function groupedMosaic(
+  data: MoneyItem[],
+  width: number,
+  height: number,
+): Tile[] {
+  const groups = (Object.keys(kindInfo) as Kind[])
+    .map((kind) => ({
+      id: kind,
+      label: kindInfo[kind].label,
+      short: kindInfo[kind].label,
+      value: data
+        .filter((d) => d.kind === kind)
+        .reduce((n, d) => n + d.value, 0),
+      kind,
+      basis: '',
+      note: '',
+    }))
+    .filter((d) => d.value > 0);
+  return mosaic(groups, 0, 0, width, height).flatMap((g) =>
+    mosaic(
+      data.filter((d) => d.kind === g.item.kind),
+      g.x,
+      g.y,
+      g.w,
+      g.h,
+    ),
+  );
 }

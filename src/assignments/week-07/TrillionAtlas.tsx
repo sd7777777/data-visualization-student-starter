@@ -1,6 +1,7 @@
 'use client';
+/* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- Focusable scroll region supports keyboard panning when zoomed. */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { scaleLinear } from 'd3-scale';
 import {
   ARCHIVE,
@@ -10,54 +11,100 @@ import {
   items,
   kindInfo,
   mosaic,
+  groupedMosaic,
   type Kind,
 } from './data';
 import './trillion-atlas.css';
 
-function download(name: string, body: string, type: string) {
-  const url = URL.createObjectURL(new Blob([body], { type }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = name;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 export default function TrillionAtlas() {
   const [filter, setFilter] = useState<Kind | 'all'>('all');
-  const [mode, setMode] = useState<'mosaic' | 'rank'>('mosaic');
   const [selected, setSelected] = useState('one-percent');
+  const [grouped, setGrouped] = useState(false);
+  const [grid, setGrid] = useState(true);
+  const [zoom, setZoom] = useState(1);
+  const [query, setQuery] = useState('');
+  const [size, setSize] = useState({ width: 1400, height: 850 });
   const [left, setLeft] = useState('us-gdp');
   const [right, setRight] = useState('military');
+  const [compareOpen, setCompareOpen] = useState(false);
   const [notice, setNotice] = useState('');
   const [back, setBack] = useState('./');
+  const viewport = useRef<HTMLElement>(null);
   useEffect(() => {
+    const node = viewport.current;
+    if (!node) return;
+    const observer = new ResizeObserver(([entry]) =>
+      setSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      }),
+    );
+    observer.observe(node);
     const frame = requestAnimationFrame(() => {
       const p = new URLSearchParams(location.search);
-      if (items.some((d) => d.id === p.get('a'))) setLeft(p.get('a')!);
+      if (items.some((d) => d.id === p.get('a'))) {
+        setLeft(p.get('a')!);
+        setCompareOpen(true);
+      }
       if (items.some((d) => d.id === p.get('b'))) setRight(p.get('b')!);
       setBack(location.pathname.replace(/week-7(?:\.html)?\/?$/, ''));
     });
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
   }, []);
   const shown = useMemo(
     () => items.filter((d) => filter === 'all' || d.kind === filter),
     [filter],
   );
-  const tiles = useMemo(() => mosaic(shown), [shown]);
+  const width = size.width * zoom,
+    height = size.height * zoom;
+  const tiles = useMemo(
+    () =>
+      grouped
+        ? groupedMosaic(shown, width, height)
+        : mosaic(shown, 0, 0, width, height),
+    [shown, width, height, grouped],
+  );
+  const unit = Math.sqrt(
+    (width * height) / shown.reduce((n, d) => n + d.value, 0),
+  );
   const focus = items.find((d) => d.id === selected)!;
   const a = items.find((d) => d.id === left)!;
   const b = items.find((d) => d.id === right)!;
-  const result = comparison(a, b);
-  const compareScale = scaleLinear()
+  const ratio = comparison(a, b);
+  const bars = scaleLinear()
     .domain([0, Math.max(a.value, b.value)])
     .range([0, 100]);
-  const rankScale = scaleLinear()
-    .domain([0, Math.max(...shown.map((d) => d.value))])
-    .range([0, 100]);
-  function setCategory(next: Kind | 'all') {
+  const matches = shown.filter((d) =>
+    d.label.toLowerCase().includes(query.toLowerCase()),
+  );
+  function chooseFilter(next: Kind | 'all') {
     setFilter(next);
+    setZoom(1);
+    setQuery('');
     if (next !== 'all' && focus.kind !== next)
       setSelected(items.find((d) => d.kind === next)!.id);
+    viewport.current?.scrollTo(0, 0);
+  }
+  function changeZoom(next: number) {
+    setZoom(next);
+    // Keep the selected rectangle visible when expanding the canvas.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const node = document.getElementById(`tile-${selected}`),
+          frame = viewport.current;
+        if (node && frame)
+          frame.scrollTo({
+            left:
+              node.offsetLeft + node.offsetWidth / 2 - frame.clientWidth / 2,
+            top:
+              node.offsetTop + node.offsetHeight / 2 - frame.clientHeight / 2,
+            behavior: 'instant',
+          });
+      }),
+    );
   }
   function exportCsv() {
     const rows = [
@@ -80,13 +127,23 @@ export default function TrillionAtlas() {
         ARCHIVE,
       ]),
     ];
-    download(
-      'trillion-atlas-2018-reference.csv',
-      rows
-        .map((r) => r.map((s) => '"' + s.replaceAll('"', '""') + '"').join(','))
-        .join('\r\n'),
-      'text/csv;charset=utf-8',
+    const url = URL.createObjectURL(
+      new Blob(
+        [
+          rows
+            .map((r) =>
+              r.map((v) => '"' + v.replaceAll('"', '""') + '"').join(','),
+            )
+            .join('\r\n'),
+        ],
+        { type: 'text/csv;charset=utf-8' },
+      ),
     );
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'trillion-atlas-2018-reference.csv';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     setNotice(`Downloaded ${shown.length} rows.`);
   }
   async function share() {
@@ -99,334 +156,319 @@ export default function TrillionAtlas() {
       await navigator.clipboard.writeText(url.href);
       setNotice('Comparison link copied.');
     } catch {
-      setNotice(`Copy this comparison link: ${url.href}`);
+      setNotice(`Copy this link: ${url.href}`);
     }
   }
+  function compareSelected() {
+    setLeft(selected);
+    setCompareOpen(true);
+    requestAnimationFrame(() => {
+      document.getElementById('compare-a')?.focus();
+    });
+  }
   return (
-    <div className="ta">
-      <a className="ta-skip" href="#atlas">
-        Skip to the atlas
-      </a>
+    <main className="ta" id="top">
       <header className="ta-header">
-        <a className="ta-brand" href={back}>
-          ← Coursework
-        </a>
-        <nav aria-label="Atlas navigation">
-          <a href="#atlas">Chart</a>
-          <a href="#compare">Compare</a>
-          <a href="#sources">Sources</a>
-        </nav>
-        <span className="ta-course">Week 07</span>
-      </header>
-      <main id="top">
-        <div className="ta-heading">
-          <h1 id="ta-title">Trillion Atlas</h1>
-          <p>Compare 20 historical dollar amounts.</p>
-          <span>2018 reference · US$ trillions · $1T = 1,000 billion</span>
+        <div>
+          <h1>Trillions</h1>
+          <span>33 amounts · 2018 reference · US$</span>
         </div>
-        <section id="atlas" className="ta-section" aria-labelledby="ta-title">
-          <p className="ta-instruction">
-            Area shows the amount; color shows its type. Select a block for
-            details.
-          </p>
-          <div className="ta-toolbar">
-            <fieldset className="ta-filters" aria-label="Filter by money type">
+        <a href={back}>← Coursework</a>
+      </header>
+      <section id="atlas" aria-label="Trillion-dollar mosaic">
+        <div className="ta-toolbar">
+          <fieldset className="ta-filters" aria-label="Filter by type">
+            <button
+              aria-pressed={filter === 'all'}
+              onClick={() => chooseFilter('all')}
+            >
+              All 33
+            </button>
+            {(Object.keys(kindInfo) as Kind[]).map((k) => (
               <button
-                aria-pressed={filter === 'all'}
-                onClick={() => setCategory('all')}
+                key={k}
+                aria-pressed={filter === k}
+                onClick={() => chooseFilter(k)}
               >
-                Everything <small>20</small>
+                <i style={{ background: kindInfo[k].color }} />
+                {kindInfo[k].label}
               </button>
-              {(Object.keys(kindInfo) as Kind[]).map((k) => (
-                <button
-                  key={k}
-                  aria-pressed={filter === k}
-                  onClick={() => setCategory(k)}
-                >
-                  <i style={{ background: kindInfo[k].color }} />
-                  {kindInfo[k].label}
-                </button>
-              ))}
-            </fieldset>
-            <fieldset className="ta-view" aria-label="Chart view">
-              <button
-                aria-pressed={mode === 'mosaic'}
-                onClick={() => setMode('mosaic')}
+            ))}
+          </fieldset>
+          <div className="ta-tools">
+            <label>
+              <input
+                type="checkbox"
+                checked={grouped}
+                onChange={(e) => setGrouped(e.target.checked)}
+              />{' '}
+              Group by type
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={grid}
+                onChange={(e) => setGrid(e.target.checked)}
+              />{' '}
+              $1T grid
+            </label>
+            <label className="ta-zoom">
+              Zoom
+              <select
+                aria-label="Mosaic zoom"
+                value={zoom}
+                onChange={(e) => changeZoom(Number(e.target.value))}
               >
-                ▦ Mosaic
-              </button>
-              <button
-                aria-pressed={mode === 'rank'}
-                onClick={() => setMode('rank')}
-              >
-                ☰ Ranked bars
-              </button>
-            </fieldset>
+                {[1, 1.5, 2, 3].map((z) => (
+                  <option key={z} value={z}>
+                    {z === 1 ? 'Fit' : `${z * 100}%`}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <input
+              type="search"
+              aria-label="Find an amount"
+              placeholder="Find amount…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
-          <p className="ta-reading-note">
-            {filter === 'all'
-              ? 'These amounts have different time bases and overlap. Compare scale; do not add them.'
-              : kindInfo[filter].explanation +
-                ' Categories may still overlap and use different observation years.'}{' '}
-            {mode === 'mosaic'
-              ? 'The mosaic refits when filtered.'
-              : 'All bars begin at zero.'}
-          </p>
-          <div className="ta-atlas-layout">
-            <div className="ta-chart-wrap">
-              {mode === 'mosaic' ? (
-                <div
-                  className="ta-mosaic"
-                  aria-label="Proportional area comparison, in trillions of US dollars"
+        </div>
+        <div className="ta-chart-caption">
+          <span>
+            Area ∝ dollars ·{' '}
+            {grid ? 'one full grid square = $1 trillion' : 'grid hidden'} ·{' '}
+            {query
+              ? `${matches.length} matches`
+              : grouped
+                ? 'grouped by type'
+                : 'ordered by amount'}
+          </span>
+          <span>Overlapping amounts; not a combined total.</span>
+        </div>
+        <section
+          ref={viewport}
+          className="ta-viewport"
+          aria-label="Zoomable mosaic; scroll to explore"
+          tabIndex={0}
+        >
+          <div className="ta-mosaic" style={{ width, height }}>
+            {tiles.map((t) => {
+              const d = t.item,
+                small = t.w < 100 || t.h < 80,
+                tiny = t.w < 65 || t.h < 55;
+              const padding = tiny ? 3 : small ? 5 : 10;
+              const valueFont = Math.max(14, Math.min(66, t.w / 4, t.h / 3));
+              const detailed = t.w > 260 && t.h > 240;
+              const label = t.w > 260 && t.h > 180 ? d.label : d.short;
+              const availableHeight = Math.max(
+                10,
+                t.h - padding * 2 - valueFont * 1.1 - 10 - (detailed ? 40 : 0),
+              );
+              const availableWidth = Math.max(15, t.w - padding * 2 - 5);
+              let labelFont = Math.min(21, Math.max(9, t.w / 11));
+              while (
+                labelFont > 9 &&
+                Math.ceil((label.length * labelFont * 0.58) / availableWidth) *
+                  labelFont *
+                  1.14 >
+                  availableHeight
+              )
+                labelFont -= 0.5;
+              const labelLines = Math.max(
+                1,
+                Math.floor(availableHeight / (labelFont * 1.14)),
+              );
+              const match =
+                !query || d.label.toLowerCase().includes(query.toLowerCase());
+              return (
+                <button
+                  key={d.id}
+                  id={`tile-${d.id}`}
+                  className={`ta-tile ${small ? 'ta-small' : ''} ${tiny ? 'ta-tiny' : ''} ${match ? '' : 'ta-dim'}`}
+                  style={{
+                    left: t.x,
+                    top: t.y,
+                    width: t.w,
+                    height: t.h,
+                    backgroundColor: kindInfo[d.kind].color,
+                    color: kindInfo[d.kind].ink,
+                    backgroundImage: grid
+                      ? 'linear-gradient(to right, #17230f20 1px, transparent 1px),linear-gradient(to bottom, #17230f20 1px, transparent 1px)'
+                      : 'none',
+                    backgroundSize: `${unit}px ${unit}px`,
+                    backgroundPosition: `${-t.x}px ${-t.y}px`,
+                  }}
+                  aria-label={`${d.label}, ${amount(d.value)}, ${kindInfo[d.kind].label}`}
+                  aria-pressed={selected === d.id}
+                  title={`${d.label} · ${amount(d.value)} · ${d.basis}`}
+                  onClick={() => setSelected(d.id)}
                 >
-                  {tiles.map(({ item: d, x, y, w, h }) => (
-                    <button
-                      key={d.id}
-                      className={`ta-tile ${w < 120 || h < 80 ? 'ta-tile-small' : ''}`}
+                  <div
+                    className="ta-tile-label"
+                    style={{ backgroundColor: kindInfo[d.kind].color }}
+                  >
+                    <b
                       style={{
-                        left: `${x / 10}%`,
-                        top: `${y / 6.2}%`,
-                        width: `${w / 10}%`,
-                        height: `${h / 6.2}%`,
-                        background: kindInfo[d.kind].color,
-                        color: kindInfo[d.kind].ink,
+                        fontSize: valueFont,
                       }}
-                      aria-label={`${d.label}, ${amount(d.value)}, ${kindInfo[d.kind].label}`}
-                      aria-pressed={selected === d.id}
-                      onClick={() => setSelected(d.id)}
                     >
-                      <b
-                        style={{
-                          fontSize: `clamp(12px, ${Math.min(4, w / 50, h / 26)}vw, ${Math.min(48, w / 4, h / 3)}px)`,
-                        }}
-                      >
-                        {d.value}
-                        <span>T</span>
-                      </b>
-                      {w >= 95 && h >= 62 && (
-                        <span className="ta-tile-name">{d.short}</span>
-                      )}
-                      {w >= 230 && h >= 130 && (
-                        <small>
-                          {kindInfo[d.kind].label} <span>↗</span>
-                        </small>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="ta-ranking">
-                  {[...shown]
-                    .sort((x, y) => y.value - x.value)
-                    .map((d) => (
-                      <button
-                        key={d.id}
-                        aria-pressed={selected === d.id}
-                        onClick={() => setSelected(d.id)}
-                        className="ta-rank-row"
-                      >
-                        <span>{d.short}</span>
-                        <span className="ta-bar-track">
-                          <i
-                            style={{
-                              width: `${rankScale(d.value)}%`,
-                              background: kindInfo[d.kind].color,
-                            }}
-                          />
-                        </span>
-                        <b>{amount(d.value)}</b>
-                      </button>
-                    ))}
-                </div>
-              )}
-              <div className="ta-chart-footer">
-                <span>
-                  {shown.length} historical reference values ·{' '}
-                  {mode === 'mosaic' ? 'linear area' : 'linear length'}
-                </span>
-                <button onClick={exportCsv}>Download data ↓</button>
-              </div>
-            </div>
-            <aside className="ta-inspector" aria-live="polite">
-              <p className="ta-eyebrow">Selected amount</p>
-              <span
-                className="ta-type"
-                style={{
-                  background: kindInfo[focus.kind].color,
-                  color: kindInfo[focus.kind].ink,
-                }}
-              >
-                {kindInfo[focus.kind].label}
-              </span>
-              <p className="ta-inspector-value">{amount(focus.value)}</p>
-              <h3>{focus.label}</h3>
-              <p className="ta-basis">{focus.basis}</p>
-              <p>{focus.note}</p>
-              <button
-                className="ta-primary"
-                onClick={() => {
-                  setLeft(focus.id);
-                  document
-                    .getElementById('compare')
-                    ?.scrollIntoView({ behavior: 'auto' });
-                  document
-                    .getElementById('compare-a')
-                    ?.focus({ preventScroll: true });
-                }}
-              >
-                Compare this amount <span aria-hidden="true">↗</span>
-              </button>
-              <a className="ta-source-link" href={ARCHIVE}>
-                See the original 2018 value ↗
-              </a>
-            </aside>
+                      {d.value}
+                      <span>T</span>
+                    </b>
+                    <span
+                      className="ta-name"
+                      style={{
+                        fontSize: labelFont,
+                        WebkitLineClamp: labelLines,
+                      }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                  {detailed && (
+                    <span
+                      className="ta-tile-detail"
+                      style={{ backgroundColor: kindInfo[d.kind].color }}
+                    >
+                      <span>{d.basis.replace(' · 2018 reference', '')}</span>
+                      <strong>
+                        ${(d.value * 1e12).toLocaleString('en-US')}
+                      </strong>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </section>
-        <section
+        <div className="ta-selection" aria-live="polite">
+          <div>
+            <strong>{focus.label}</strong>
+            <b>{amount(focus.value)}</b>
+            <span>{focus.basis}</span>
+          </div>
+          <div className="ta-selection-actions">
+            <button onClick={compareSelected}>Compare selected</button>
+            <button onClick={exportCsv}>CSV ↓</button>
+          </div>
+          <p>
+            {focus.note} <a href={ARCHIVE}>Source ↗</a>
+          </p>
+        </div>
+      </section>
+      <div className="ta-bottom">
+        <details
           id="compare"
-          className="ta-section ta-compare"
-          aria-labelledby="compare-title"
+          open={compareOpen}
+          onToggle={(e) => setCompareOpen(e.currentTarget.open)}
         >
-          <div className="ta-section-head">
-            <h2 id="compare-title">Compare two amounts</h2>
-            <button className="ta-outline" onClick={share}>
-              Copy comparison link ↗
+          <summary>Compare two amounts</summary>
+          <div className="ta-compare-controls">
+            {[
+              { id: 'a', value: left, set: setLeft },
+              { id: 'b', value: right, set: setRight },
+            ].map(({ id, value, set }) => (
+              <label key={id}>
+                Amount {id.toUpperCase()}
+                <select
+                  id={`compare-${id}`}
+                  value={value}
+                  onChange={(e) => set(e.target.value)}
+                >
+                  {items.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.label} · {amount(d.value)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+            <button
+              onClick={() => {
+                setLeft(right);
+                setRight(left);
+              }}
+            >
+              Swap amounts
             </button>
+            <button onClick={share}>Copy comparison link</button>
           </div>
-          <div className="ta-compare-grid">
-            <div className="ta-compare-controls">
-              {[
-                { key: 'a', value: left, set: setLeft },
-                { key: 'b', value: right, set: setRight },
-              ].map(({ key, value, set }) => (
-                <label key={key} htmlFor={`compare-${key}`}>
-                  <span>AMOUNT {key.toUpperCase()}</span>
-                  <select
-                    id={`compare-${key}`}
-                    value={value}
-                    onChange={(e) => set(e.target.value)}
-                  >
-                    {items.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.label} · {amount(d.value)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-              <button
-                className="ta-swap"
-                onClick={() => {
-                  setLeft(right);
-                  setRight(left);
-                }}
-              >
-                ⇄ Swap amounts
-              </button>
-            </div>
-            <div className="ta-ratio" aria-live="polite">
-              <b>
-                {result.ratio.toLocaleString('en-US', {
-                  maximumFractionDigits: 2,
-                })}
-                <span>×</span>
-              </b>
-              <p>
-                <strong>{a.label}</strong> is{' '}
-                {result.ratio.toLocaleString('en-US', {
-                  maximumFractionDigits: 2,
-                })}{' '}
-                times the amount of <strong>{b.label.toLowerCase()}</strong> in
-                the reference.
-              </p>
-            </div>
-          </div>
+          <p className="ta-ratio">
+            <b>
+              {ratio.ratio.toLocaleString('en-US', {
+                maximumFractionDigits: 2,
+              })}
+              ×
+            </b>{' '}
+            {a.label} / {b.label}
+          </p>
           <div className="ta-compare-bars">
             {[a, b].map((d, i) => (
               <div key={i}>
+                <span>
+                  {d.label} · {amount(d.value)}
+                </span>
                 <div>
-                  <span>
-                    {i === 0 ? 'A' : 'B'} / {d.label}
-                  </span>
-                  <b>{amount(d.value)}</b>
-                </div>
-                <div className="ta-compare-track">
                   <i
                     style={{
-                      width: `${compareScale(d.value)}%`,
+                      width: `${bars(d.value)}%`,
                       background: kindInfo[d.kind].color,
                     }}
                   />
                 </div>
-                <small>{d.basis}</small>
               </div>
             ))}
           </div>
-          <p className="ta-caution" aria-live="polite">
-            <b>
-              {left === right
-                ? 'Same amount selected.'
-                : !result.sameKind
-                  ? 'Different kinds of money.'
-                  : !result.sameBasis
-                    ? 'Different measurement bases.'
-                    : 'Scale comparison only.'}
-            </b>{' '}
+          <p className="ta-caution">
             {left === right
-              ? 'Choose a different amount to compare.'
-              : !result.sameKind
-                ? 'The ratio compares size only. Stocks, annual activity and investment estimates have different time bases.'
-                : 'Scope and observation dates may differ; see the source notes.'}
+              ? 'Same amount selected.'
+              : !ratio.sameKind
+                ? 'Different kinds of money.'
+                : !ratio.sameBasis
+                  ? 'Different measurement bases.'
+                  : 'Scale comparison only.'}{' '}
+            Scope and dates may differ.
           </p>
-        </section>
-        <section
-          id="sources"
-          className="ta-section ta-sources"
-          aria-labelledby="sources-title"
-        >
-          <h2 id="sources-title">Sources & notes</h2>
+        </details>
+        <details id="sources">
+          <summary>Sources & method</summary>
           <p>
-            Inspired by David McCandless’s <a href={ORIGINAL}>Trillions</a>,
-            Information is Beautiful. All 20 values come from the{' '}
-            <a href={ARCHIVE}>August 16, 2018 graphic</a>. They are historical,
-            not current estimates.
+            Recreated from David McCandless’s <a href={ORIGINAL}>Trillions</a> /
+            Information is Beautiful. All 33 amounts are transcribed from the{' '}
+            <a href={ARCHIVE}>August 16, 2018 graphic</a>. They are historical
+            values; some source definitions and observation dates are missing.
           </p>
-          <details className="ta-reading">
-            <summary>Data and method</summary>
-            <p>
-              Amounts overlap: country GDP is included in world GDP, and some
-              investment estimates span several years. Do not add the blocks.
-              The source does not supply every observation date or definition;
-              individual notes flag these gaps. No inflation adjustment is
-              applied.
-            </p>
-            <p>
-              Tile area is proportional to value. Filtering rescales the mosaic.
-              Ranked bars and pair comparisons use zero-based linear D3 scales.
-              Select small blocks for their full labels, or switch to Ranked
-              bars. Categories are added for this recreation.
-            </p>
-          </details>
-        </section>
-        <footer className="ta-footer">
-          <b>TRILLION ATLAS</b>
-          <span>Week 07 · Recreate an Inspirational Piece</span>
-          <a href="#top">Back to the top ↑</a>
-        </footer>
-        <output className="ta-notice">
-          {notice && (
-            <>
-              <span>{notice}</span>
-              <button
-                aria-label="Dismiss notification"
-                onClick={() => setNotice('')}
-              >
-                ×
-              </button>
-            </>
-          )}
-        </output>
-      </main>
-    </div>
+          <p>
+            Area is linear in dollars. Each full grid square has the area of
+            $1T; squares clipped at block edges are partial units. The grid is a
+            scale reference, not a breakdown into subcategories. Grouping
+            rearranges the same amounts without changing their area scale.
+            Filtering rescales the mosaic. Zoom enlarges all dimensions equally.
+            Color indicates the descriptive categories added here.
+          </p>
+          <p>
+            Amounts overlap and mix time bases, including daily turnover, annual
+            GDP and accumulated wealth. Do not add them or interpret a size
+            ratio as equivalent spending power. No inflation adjustment is
+            applied.
+          </p>
+        </details>
+      </div>
+      <output className="ta-notice">
+        {notice && (
+          <>
+            <span>{notice}</span>
+            <button
+              aria-label="Dismiss notification"
+              onClick={() => setNotice('')}
+            >
+              ×
+            </button>
+          </>
+        )}
+      </output>
+    </main>
   );
 }

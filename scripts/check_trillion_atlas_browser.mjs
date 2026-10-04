@@ -26,6 +26,7 @@ try {
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.locator('.ta-tile').first().waitFor();
   assert.equal(await page.locator('.ta-tile').count(), 33);
+  assert.equal(await page.locator('.ta-emoji').count(), 33);
   const chart = await page.locator('.ta-viewport').boundingBox();
   assert.ok(
     chart.y < 180 && chart.width > 1380,
@@ -60,14 +61,36 @@ try {
     await page.locator('.ta-selection').innerText(),
     /Daily activity/,
   );
+  const dialog = page.getByRole('dialog');
+  assert.equal(await dialog.isVisible(), true);
+  assert.match(await dialog.innerText(), /Daily activity/);
+  assert.match(await dialog.innerText(), /5.3T/);
+  await page.screenshot({ path: `${shots}/week-07-detail.png` });
+  await page.keyboard.press('Escape');
+  assert.equal(await dialog.isVisible(), false);
+  assert.equal(
+    await page
+      .locator('#tile-fx')
+      .evaluate((e) => e === document.activeElement),
+    true,
+  );
+  await page.keyboard.press('Enter');
+  assert.equal(await dialog.isVisible(), true);
+  await page
+    .getByRole('button', { name: 'Close details', exact: true })
+    .click();
   await page.getByLabel('Find an amount').fill('');
   const small = await page.locator('#tile-fx').boundingBox();
-  await page.getByLabel('Mosaic zoom').selectOption('2');
+  await page.locator('#tile-fx').click();
+  await page
+    .getByRole('button', { name: 'Zoom to this tile ⤢', exact: true })
+    .click();
+  assert.equal(await dialog.isVisible(), false);
   await page.waitForFunction(
     () => document.querySelector('.ta-mosaic').clientWidth > 2000,
   );
   const big = await page.locator('#tile-fx').boundingBox();
-  assert.ok(Math.abs(big.width / small.width - 2) < 0.01);
+  assert.ok(Math.abs(big.width / small.width - 3) < 0.01);
   assert.ok(
     await page
       .locator('.ta-viewport')
@@ -86,7 +109,7 @@ try {
     /^US GDP$/,
   );
   await page
-    .getByRole('button', { name: 'Compare selected', exact: true })
+    .getByRole('button', { name: 'Compare this amount →', exact: true })
     .click();
   assert.equal(await page.locator('#compare').evaluate((e) => e.open), true);
   assert.equal(await page.locator('#compare-a').inputValue(), 'us-gdp');
@@ -124,11 +147,30 @@ try {
       ),
       `Page overflow ${width}`,
     );
-    if (width === 390)
+    if (width === 390) {
       await page.screenshot({
         path: `${shots}/week-07-mobile.png`,
         fullPage: true,
       });
+    }
+    await page.locator('#tile-one-percent').click();
+    const card = await dialog.boundingBox();
+    assert.ok(
+      card.width <= width && card.x >= 0 && card.y >= 0,
+      `Detail overflow ${width}`,
+    );
+    await page
+      .getByRole('button', { name: 'Close details', exact: true })
+      .focus();
+    await page.keyboard.press('Shift+Tab');
+    assert.equal(
+      await dialog.evaluate((e) => e.contains(document.activeElement)),
+      true,
+      'Modal traps keyboard focus',
+    );
+    if (width === 390)
+      await page.screenshot({ path: `${shots}/week-07-mobile-detail.png` });
+    await page.keyboard.press('Escape');
   }
   await page.goto(`${base}?a=world&b=us-gdp#compare`, {
     waitUntil: 'networkidle',
@@ -140,7 +182,7 @@ try {
   assert.equal(await page.locator('#compare-a').inputValue(), 'us-gdp');
   assert.deepEqual(errors, []);
   console.log(
-    'Passed: 33-value mosaic, chart prominence, group area invariance, grid, search, zoom and scroll, keyboard filtering, selection, comparisons, CSV, collapsed extras, responsive layouts, shared URLs, no page errors.',
+    'Passed: 33-value mosaic, emoji labels, modal details, keyboard dismissal and focus, zoom and compare actions, chart prominence, group area invariance, grid, search, zoom and scroll, keyboard filtering, selection, comparisons, CSV, collapsed extras, responsive layouts, shared URLs, no page errors.',
   );
 } finally {
   await browser.close();

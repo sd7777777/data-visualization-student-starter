@@ -29,6 +29,7 @@ export default function TrillionAtlas() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [notice, setNotice] = useState('');
   const [back, setBack] = useState('./');
+  const detail = useRef<HTMLDialogElement>(null);
   const viewport = useRef<HTMLElement>(null);
   useEffect(() => {
     const node = viewport.current;
@@ -159,7 +160,12 @@ export default function TrillionAtlas() {
       setNotice(`Copy this link: ${url.href}`);
     }
   }
+  function openTile(id: string) {
+    setSelected(id);
+    detail.current?.showModal();
+  }
   function compareSelected() {
+    detail.current?.close();
     setLeft(selected);
     setCompareOpen(true);
     requestAnimationFrame(() => {
@@ -245,7 +251,7 @@ export default function TrillionAtlas() {
                 ? 'grouped by type'
                 : 'ordered by amount'}
           </span>
-          <span>Overlapping amounts; not a combined total.</span>
+          <span>Click a tile to explore · Amounts overlap.</span>
         </div>
         <section
           ref={viewport}
@@ -259,7 +265,15 @@ export default function TrillionAtlas() {
                 small = t.w < 100 || t.h < 80,
                 tiny = t.w < 65 || t.h < 55;
               const padding = tiny ? 3 : small ? 5 : 10;
-              const valueFont = Math.max(14, Math.min(66, t.w / 4, t.h / 3));
+              const valueFont = Math.max(
+                9,
+                Math.min(
+                  66,
+                  (t.w - padding * 2 - 8) /
+                    (String(d.value).length * 0.62 + 1.2),
+                  t.h / 3,
+                ),
+              );
               const detailed = t.w > 260 && t.h > 240;
               const label = t.w > 260 && t.h > 180 ? d.label : d.short;
               const availableHeight = Math.max(
@@ -295,7 +309,7 @@ export default function TrillionAtlas() {
                     backgroundColor: kindInfo[d.kind].color,
                     color: kindInfo[d.kind].ink,
                     backgroundImage: grid
-                      ? 'linear-gradient(to right, #17230f20 1px, transparent 1px),linear-gradient(to bottom, #17230f20 1px, transparent 1px)'
+                      ? 'linear-gradient(to right, #172b4520 1px, transparent 1px),linear-gradient(to bottom, #172b4520 1px, transparent 1px)'
                       : 'none',
                     backgroundSize: `${unit}px ${unit}px`,
                     backgroundPosition: `${-t.x}px ${-t.y}px`,
@@ -303,20 +317,30 @@ export default function TrillionAtlas() {
                   aria-label={`${d.label}, ${amount(d.value)}, ${kindInfo[d.kind].label}`}
                   aria-pressed={selected === d.id}
                   title={`${d.label} · ${amount(d.value)} · ${d.basis}`}
-                  onClick={() => setSelected(d.id)}
+                  aria-haspopup="dialog"
+                  onClick={() => openTile(d.id)}
                 >
                   <div
                     className="ta-tile-label"
                     style={{ backgroundColor: kindInfo[d.kind].color }}
                   >
-                    <b
-                      style={{
-                        fontSize: valueFont,
-                      }}
-                    >
-                      {d.value}
-                      <span>T</span>
-                    </b>
+                    <span className="ta-value-row">
+                      <span
+                        className="ta-emoji"
+                        aria-hidden="true"
+                        style={{ fontSize: Math.max(9, valueFont * 0.65) }}
+                      >
+                        {d.emoji}
+                      </span>
+                      <b
+                        style={{
+                          fontSize: valueFont,
+                        }}
+                      >
+                        {d.value}
+                        <span>T</span>
+                      </b>
+                    </span>
                     <span
                       className="ta-name"
                       style={{
@@ -456,6 +480,68 @@ export default function TrillionAtlas() {
           </p>
         </details>
       </div>
+      <dialog
+        ref={detail}
+        className="ta-detail"
+        aria-labelledby="ta-detail-title"
+        onKeyDown={(e) => {
+          if (e.key !== 'Tab') return;
+          const controls =
+            e.currentTarget.querySelectorAll<HTMLElement>('button, a[href]');
+          const first = controls[0],
+            last = controls[controls.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }}
+      >
+        <div
+          className="ta-detail-top"
+          style={{
+            background: kindInfo[focus.kind].color,
+            color: kindInfo[focus.kind].ink,
+          }}
+        >
+          <button
+            className="ta-detail-close"
+            aria-label="Close details"
+            onClick={() => detail.current?.close()}
+          >
+            ×
+          </button>
+          <span className="ta-detail-emoji" aria-hidden="true">
+            {focus.emoji}
+          </span>
+          <span className="ta-detail-kind">{kindInfo[focus.kind].label}</span>
+          <h2 id="ta-detail-title">{focus.label}</h2>
+          <strong className="ta-detail-value">{amount(focus.value)}</strong>
+          <span className="ta-detail-dollars">
+            ${(focus.value * 1e12).toLocaleString('en-US')}
+          </span>
+        </div>
+        <div className="ta-detail-body">
+          <p className="ta-detail-basis">{focus.basis}</p>
+          <p>{focus.note}</p>
+          <div className="ta-detail-actions">
+            <button onClick={compareSelected}>Compare this amount →</button>
+            <button
+              onClick={() => {
+                detail.current?.close();
+                changeZoom(3);
+              }}
+            >
+              Zoom to this tile ⤢
+            </button>
+          </div>
+          <a href={ARCHIVE} target="_blank" rel="noreferrer">
+            Original 2018 source ↗
+          </a>
+        </div>
+      </dialog>
       <output className="ta-notice">
         {notice && (
           <>

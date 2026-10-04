@@ -3,6 +3,7 @@ export interface MoneyItem {
   id: string;
   label: string;
   short: string;
+  emoji: string;
   value: number;
   kind: Kind;
   basis: string;
@@ -18,26 +19,26 @@ export const kindInfo: Record<
 > = {
   total: {
     label: 'Multiyear totals',
-    color: '#e9ca70',
-    ink: '#342714',
+    color: '#fbbf54',
+    ink: '#3a2605',
     explanation: 'Losses, spending or changes accumulated over several years.',
   },
   flow: {
     label: 'Activity',
-    color: '#c9ee71',
-    ink: '#152214',
+    color: '#8ec5ff',
+    ink: '#102f50',
     explanation: 'Activity measured over a stated or unspecified period.',
   },
   stock: {
     label: 'Accumulated value',
-    color: '#b2a7ee',
-    ink: '#211641',
+    color: '#c4b0f0',
+    ink: '#30204e',
     explanation: 'Wealth, debt or asset value at a point in time.',
   },
   estimate: {
     label: 'Costs / estimates',
-    color: '#ffb391',
-    ink: '#451d10',
+    color: '#63d9bf',
+    ink: '#0a3a32',
     explanation: 'Costs and investment estimates with varying horizons.',
   },
 };
@@ -47,6 +48,7 @@ export const kindInfo: Record<
 export const items: MoneyItem[] = [
   {
     id: 'military',
+    emoji: '🛡️',
     label: 'All military budgets',
     short: 'Military budgets',
     value: 1.7,
@@ -56,6 +58,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'india',
+    emoji: '🇮🇳',
     label: 'India GDP',
     short: 'India GDP',
     value: 2.4,
@@ -65,6 +68,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'uk',
+    emoji: '🇬🇧',
     label: 'UK GDP',
     short: 'UK GDP',
     value: 2.6,
@@ -74,6 +78,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'france',
+    emoji: '🇫🇷',
     label: 'France GDP',
     short: 'France GDP',
     value: 2.6,
@@ -83,6 +88,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'germany',
+    emoji: '🇩🇪',
     label: 'Germany GDP',
     short: 'Germany GDP',
     value: 3.7,
@@ -92,6 +98,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'japan',
+    emoji: '🇯🇵',
     label: 'Japan GDP',
     short: 'Japan GDP',
     value: 4.9,
@@ -101,6 +108,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'china',
+    emoji: '🇨🇳',
     label: 'China GDP',
     short: 'China GDP',
     value: 11.9,
@@ -110,6 +118,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'us-gdp',
+    emoji: '🇺🇸',
     label: 'US GDP',
     short: 'US GDP',
     value: 19.4,
@@ -119,6 +128,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'world',
+    emoji: '🌍',
     label: 'World GDP',
     short: 'World GDP',
     value: 75.6,
@@ -128,6 +138,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'billionaires',
+    emoji: '💎',
     label: 'All billionaires’ wealth',
     short: 'Billionaire wealth',
     value: 6.5,
@@ -137,6 +148,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'household',
+    emoji: '🏠',
     label: 'US household debt',
     short: 'Household debt',
     value: 13,
@@ -146,6 +158,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'us-debt',
+    emoji: '🇺🇸',
     label: 'US government debt',
     short: 'US government debt',
     value: 20,
@@ -155,6 +168,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'central',
+    emoji: '🏦',
     label: 'Money in the world’s central banks',
     short: 'Central banks',
     value: 21,
@@ -164,6 +178,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'fortune',
+    emoji: '🏢',
     label: 'Combined value of Fortune 500 companies',
     short: 'Fortune 500 value',
     value: 27.6,
@@ -173,6 +188,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'global-debt',
+    emoji: '🌐',
     label: 'Total global debt',
     short: 'Global debt',
     value: 63,
@@ -182,6 +198,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'one-percent',
+    emoji: '💰',
     label: 'Wealth of the 1%',
     short: 'Wealth of the 1%',
     value: 127,
@@ -191,6 +208,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'low-carbon',
+    emoji: '🌱',
     label: 'Deploy low-carbon technology worldwide',
     short: 'Low-carbon tech',
     value: 4.7,
@@ -200,6 +218,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'efficiency',
+    emoji: '💡',
     label: 'Make buildings, transport and industry energy efficient',
     short: 'Energy efficiency',
     value: 8.8,
@@ -209,6 +228,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'paris',
+    emoji: '🌡️',
     label: 'Meet Paris climate targets by 2030',
     short: 'Paris climate targets',
     value: 16.5,
@@ -218,6 +238,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'infrastructure',
+    emoji: '🏗️',
     label: 'Infrastructure for global growth before 2030',
     short: 'Global infrastructure',
     value: 89,
@@ -227,6 +248,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'apple',
+    emoji: '🍎',
     label: 'Apple — trillion-dollar reference',
     short: 'Apple',
     value: 1,
@@ -236,6 +258,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'corruption',
+    emoji: '🤝',
     label: 'Corruption in developing countries',
     short: 'Corruption',
     value: 1,
@@ -245,6 +268,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'sdgs',
+    emoji: '🎯',
     label: 'Reach the UN Sustainable Development Goals',
     short: 'UN development goals',
     value: 1.4,
@@ -254,6 +278,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'laundering',
+    emoji: '🧺',
     label: 'Money laundered globally',
     short: 'Money laundering',
     value: 1.6,
@@ -263,6 +288,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'fashion',
+    emoji: '👕',
     label: 'Global fashion industry',
     short: 'Fashion industry',
     value: 2.4,
@@ -272,6 +298,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'internet',
+    emoji: '💻',
     label: 'Top 20 internet companies',
     short: 'Top 20 internet firms',
     value: 3,
@@ -281,6 +308,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'wars',
+    emoji: '⚔️',
     label: 'Cost of the Iraq and Afghanistan wars',
     short: 'Iraq & Afghanistan wars',
     value: 3,
@@ -290,6 +318,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'fx',
+    emoji: '💱',
     label: 'Daily foreign exchange market',
     short: 'Foreign exchange',
     value: 5.3,
@@ -299,6 +328,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'developing-debt',
+    emoji: '🌏',
     label: 'Debt of low- and middle-income countries',
     short: 'Developing-country debt',
     value: 6.7,
@@ -308,6 +338,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'crisis',
+    emoji: '📉',
     label: 'Cost of the 2007–08 financial crisis',
     short: 'Financial crisis losses',
     value: 15,
@@ -317,6 +348,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'eu-debt',
+    emoji: '🇪🇺',
     label: 'EU governments’ debt',
     short: 'EU government debt',
     value: 15.2,
@@ -326,6 +358,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'offshore',
+    emoji: '🏝️',
     label: 'Wealth hidden offshore by the rich',
     short: 'Offshore wealth',
     value: 26.5,
@@ -335,6 +368,7 @@ export const items: MoneyItem[] = [
   },
   {
     id: 'debt-increase',
+    emoji: '📈',
     label: 'Worldwide debt increase since the financial crisis',
     short: 'Debt increase since crisis',
     value: 57,
@@ -399,6 +433,7 @@ export function groupedMosaic(
   const groups = (Object.keys(kindInfo) as Kind[])
     .map((kind) => ({
       id: kind,
+      emoji: '',
       label: kindInfo[kind].label,
       short: kindInfo[kind].label,
       value: data

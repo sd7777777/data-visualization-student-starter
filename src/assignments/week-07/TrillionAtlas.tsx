@@ -177,7 +177,7 @@ export default function TrillionAtlas() {
       <header className="ta-header">
         <div>
           <h1>Trillions</h1>
-          <span>33 amounts · 2018 reference · US$</span>
+          <span>2018 · US$</span>
         </div>
         <a href={back}>← Coursework</a>
       </header>
@@ -202,22 +202,6 @@ export default function TrillionAtlas() {
             ))}
           </fieldset>
           <div className="ta-tools">
-            <label>
-              <input
-                type="checkbox"
-                checked={grouped}
-                onChange={(e) => setGrouped(e.target.checked)}
-              />{' '}
-              Group by type
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={grid}
-                onChange={(e) => setGrid(e.target.checked)}
-              />{' '}
-              $1T grid
-            </label>
             <label className="ta-zoom">
               Zoom
               <select
@@ -239,22 +223,34 @@ export default function TrillionAtlas() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
+            <details className="ta-view-options">
+              <summary>View</summary>
+              <div className="ta-view-panel">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={grouped}
+                    onChange={(e) => setGrouped(e.target.checked)}
+                  />{' '}
+                  Group by type
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={grid}
+                    onChange={(e) => setGrid(e.target.checked)}
+                  />{' '}
+                  $1T grid
+                </label>
+              </div>
+            </details>
           </div>
         </div>
         <div className="ta-chart-caption">
           <span>
-            Twice the area = twice the dollars ·{' '}
-            {grid ? 'one full grid square = $1 trillion' : 'grid hidden'} ·{' '}
-            {query
-              ? `${matches.length} matches`
-              : grouped
-                ? 'grouped by type'
-                : 'ordered by amount'}
+            {grid ? '1 full square = $1T' : 'Area = dollars'} · Click a tile
           </span>
-          <span>
-            {zoom === 0 ? 'All tiles in view' : 'Scroll to explore'} · Click for
-            details · Amounts overlap.
-          </span>
+          {query && <output>{matches.length} matches</output>}
         </div>
         <section
           ref={viewport}
@@ -277,11 +273,10 @@ export default function TrillionAtlas() {
                   t.h / 3,
                 ),
               );
-              const detailed = t.w > 260 && t.h > 240;
-              const label = t.w > 260 && t.h > 180 ? d.label : d.short;
+              const label = d.short;
               const availableHeight = Math.max(
                 10,
-                t.h - padding * 2 - valueFont * 1.1 - 10 - (detailed ? 40 : 0),
+                t.h - padding * 2 - valueFont * 1.1 - 10,
               );
               const availableWidth = Math.max(15, t.w - padding * 2 - 5);
               let labelFont = Math.min(21, Math.max(9, t.w / 11));
@@ -354,36 +349,11 @@ export default function TrillionAtlas() {
                       {label}
                     </span>
                   </div>
-                  {detailed && (
-                    <span
-                      className="ta-tile-detail"
-                      style={{ backgroundColor: kindInfo[d.kind].color }}
-                    >
-                      <span>{d.basis.replace(' · 2018 reference', '')}</span>
-                      <strong>
-                        ${(d.value * 1e12).toLocaleString('en-US')}
-                      </strong>
-                    </span>
-                  )}
                 </button>
               );
             })}
           </div>
         </section>
-        <div className="ta-selection" aria-live="polite">
-          <div>
-            <strong>{focus.label}</strong>
-            <b>{amount(focus.value)}</b>
-            <span>{focus.basis}</span>
-          </div>
-          <div className="ta-selection-actions">
-            <button onClick={compareSelected}>Compare selected</button>
-            <button onClick={exportCsv}>CSV ↓</button>
-          </div>
-          <p>
-            {focus.note} <a href={ARCHIVE}>Source ↗</a>
-          </p>
-        </div>
       </section>
       <div className="ta-bottom">
         <details
@@ -391,7 +361,7 @@ export default function TrillionAtlas() {
           open={compareOpen}
           onToggle={(e) => setCompareOpen(e.currentTarget.open)}
         >
-          <summary>Compare two amounts</summary>
+          <summary>Compare</summary>
           <div className="ta-compare-controls">
             {[
               { id: 'a', value: left, set: setLeft },
@@ -460,30 +430,20 @@ export default function TrillionAtlas() {
           </p>
         </details>
         <details id="sources">
-          <summary>Sources & method</summary>
+          <summary>Sources</summary>
           <p>
-            Recreated from David McCandless’s <a href={ORIGINAL}>Trillions</a> /
-            Information is Beautiful. All 33 amounts are transcribed from the{' '}
-            <a href={ARCHIVE}>August 16, 2018 graphic</a>. They are historical
-            values; some source definitions and observation dates are missing.
+            Adapted from David McCandless’s <a href={ORIGINAL}>Trillions</a>,
+            Information is Beautiful. Values from the{' '}
+            <a href={ARCHIVE}>2018 graphic</a>; dates and definitions vary.
           </p>
           <p>
-            Area is linear in dollars. Each full grid square has the area of
-            $1T; squares clipped at block edges are partial units. The grid is a
-            scale reference, not a breakdown into subcategories. The layout
-            favors square-shaped tiles. At 100%, a $1T area is at least 48 × 48
-            pixels; the canvas scrolls to keep small amounts readable. Fit all
-            compresses the full chart into the viewport. Grouping rearranges the
-            same amounts without changing their area scale. Filtering rescales
-            the mosaic. Zoom enlarges all dimensions equally. Color indicates
-            the descriptive categories added here.
+            Area represents dollars. Edge squares are partial; filtering resets
+            the scale. Amounts overlap and mix daily, annual and accumulated
+            values, so they are not additive.
           </p>
-          <p>
-            Amounts overlap and mix time bases, including daily turnover, annual
-            GDP and accumulated wealth. Do not add them or interpret a size
-            ratio as equivalent spending power. No inflation adjustment is
-            applied.
-          </p>
+          <button className="ta-download" onClick={exportCsv}>
+            Download CSV
+          </button>
         </details>
       </div>
       <dialog
@@ -525,26 +485,23 @@ export default function TrillionAtlas() {
           <span className="ta-detail-kind">{kindInfo[focus.kind].label}</span>
           <h2 id="ta-detail-title">{focus.label}</h2>
           <strong className="ta-detail-value">{amount(focus.value)}</strong>
-          <span className="ta-detail-dollars">
-            ${(focus.value * 1e12).toLocaleString('en-US')}
-          </span>
         </div>
         <div className="ta-detail-body">
           <p className="ta-detail-basis">{focus.basis}</p>
           <p>{focus.note}</p>
           <div className="ta-detail-actions">
-            <button onClick={compareSelected}>Compare this amount →</button>
+            <button onClick={compareSelected}>Compare →</button>
             <button
               onClick={() => {
                 detail.current?.close();
                 changeZoom(3);
               }}
             >
-              Zoom to this tile ⤢
+              Zoom in ⤢
             </button>
           </div>
           <a href={ARCHIVE} target="_blank" rel="noreferrer">
-            Original 2018 source ↗
+            Source ↗
           </a>
         </div>
       </dialog>

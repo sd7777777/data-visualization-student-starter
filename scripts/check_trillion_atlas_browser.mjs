@@ -34,14 +34,12 @@ try {
   );
   assert.equal(await page.locator('#compare').evaluate((e) => e.open), false);
   assert.equal(await page.locator('#sources').evaluate((e) => e.open), false);
-  const tileSizes = await page
-    .locator('.ta-tile')
-    .evaluateAll((nodes) =>
-      nodes.map((e) => ({
-        w: e.getBoundingClientRect().width,
-        h: e.getBoundingClientRect().height,
-      })),
-    );
+  const tileSizes = await page.locator('.ta-tile').evaluateAll((nodes) =>
+    nodes.map((e) => ({
+      w: e.getBoundingClientRect().width,
+      h: e.getBoundingClientRect().height,
+    })),
+  );
   assert.ok(
     tileSizes.every((t) => Math.min(t.w, t.h) >= 40),
     'Default tiles must remain usable',
@@ -60,6 +58,7 @@ try {
     fullPage: true,
   });
   const plain = await page.locator('#tile-world').boundingBox();
+  await page.locator('.ta-view-options summary').click();
   await page.getByLabel('Group by type', { exact: true }).check();
   const grouped = await page.locator('#tile-world').boundingBox();
   assert.ok(
@@ -74,13 +73,10 @@ try {
     'none',
   );
   await page.getByLabel('$1T grid', { exact: true }).check();
+  await page.locator('.ta-view-options summary').click();
   await page.getByLabel('Find an amount').fill('foreign exchange');
   assert.equal(await page.locator('.ta-tile:not(.ta-dim)').count(), 1);
   await page.locator('#tile-fx').click();
-  assert.match(
-    await page.locator('.ta-selection').innerText(),
-    /Daily activity/,
-  );
   const dialog = page.getByRole('dialog');
   assert.equal(await dialog.isVisible(), true);
   assert.match(await dialog.innerText(), /Daily activity/);
@@ -102,9 +98,7 @@ try {
   await page.getByLabel('Find an amount').fill('');
   const small = await page.locator('#tile-fx').boundingBox();
   await page.locator('#tile-fx').click();
-  await page
-    .getByRole('button', { name: 'Zoom to this tile ⤢', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Zoom in ⤢', exact: true }).click();
   assert.equal(await dialog.isVisible(), false);
   await page.waitForFunction(
     () => document.querySelector('.ta-mosaic').clientWidth > 2000,
@@ -124,13 +118,8 @@ try {
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('.ta-tile').count(), 13);
   await page.locator('#tile-us-gdp').click();
-  assert.match(
-    await page.locator('.ta-selection strong').innerText(),
-    /^US GDP$/,
-  );
-  await page
-    .getByRole('button', { name: 'Compare this amount →', exact: true })
-    .click();
+  assert.equal(await dialog.getByRole('heading').innerText(), 'US GDP');
+  await page.getByRole('button', { name: 'Compare →', exact: true }).click();
   assert.equal(await page.locator('#compare').evaluate((e) => e.open), true);
   assert.equal(await page.locator('#compare-a').inputValue(), 'us-gdp');
   await page.locator('#compare-a').selectOption('one-percent');
@@ -144,8 +133,9 @@ try {
   assert.equal(await page.locator('#compare-a').inputValue(), 'paris');
   await page.locator('#compare-b').selectOption('paris');
   assert.match(await page.locator('.ta-caution').innerText(), /Same amount/);
+  await page.locator('#sources summary').click();
   const dlPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'CSV ↓', exact: true }).click();
+  await page.getByRole('button', { name: 'Download CSV', exact: true }).click();
   const dl = await dlPromise;
   await dl.saveAs(`${shots}/verified-download.csv`);
   const csv = await readFile(`${shots}/verified-download.csv`, 'utf8');

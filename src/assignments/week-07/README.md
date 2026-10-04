@@ -16,7 +16,7 @@ The four categories—activity, accumulated value, costs/estimates and multiyear
 - At 100%, each $1T has at least 48 × 48 pixels of area; scrolling keeps small tiles readable. “Fit all” offers a full-chart overview.
 - A $1T grid starts at each tile’s upper-left corner and uses the same area scale across all blocks. Edge cells are partial units; this is a scale reference, not invented subcategories.
 - Grouping by type preserves each block’s area. Zoom enlarges both dimensions equally, up to 300%; search highlights matches without rearranging the layout.
-- Full labels, time bases and dollar expansions appear as space permits. Small labels adapt to available space; selection exposes the full source context.
+- Tiles show an emoji, amount and short name. Click for the full label, time basis and source context. Grouping and grid options are tucked under View; CSV export sits under Sources.
 - [D3 linear scales](https://d3js.org/d3-scale/linear) produce zero-based comparison bars in a collapsed panel.
 - Emoji labels identify subjects; blue marks activity, purple accumulated value, teal costs/estimates and amber multiyear totals.
 - Clicking a block opens a keyboard-accessible detail card with its full amount, time basis, source context, comparison action and 300% zoom action. Escape closes the card and returns focus to its tile. A ratio compares numerical size, not equivalent resources.

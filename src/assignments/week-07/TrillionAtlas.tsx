@@ -11,6 +11,7 @@ import {
   items,
   kindInfo,
   mosaic,
+  mosaicSize,
   groupedMosaic,
   type Kind,
 } from './data';
@@ -59,8 +60,7 @@ export default function TrillionAtlas() {
     () => items.filter((d) => filter === 'all' || d.kind === filter),
     [filter],
   );
-  const width = size.width * zoom,
-    height = size.height * zoom;
+  const { width, height } = mosaicSize(shown, size.width, size.height, zoom);
   const tiles = useMemo(
     () =>
       grouped
@@ -225,9 +225,9 @@ export default function TrillionAtlas() {
                 value={zoom}
                 onChange={(e) => changeZoom(Number(e.target.value))}
               >
-                {[1, 1.5, 2, 3].map((z) => (
+                {[0, 1, 1.5, 2, 3].map((z) => (
                   <option key={z} value={z}>
-                    {z === 1 ? 'Fit' : `${z * 100}%`}
+                    {z === 0 ? 'Fit all' : `${z * 100}%`}
                   </option>
                 ))}
               </select>
@@ -243,7 +243,7 @@ export default function TrillionAtlas() {
         </div>
         <div className="ta-chart-caption">
           <span>
-            Area ∝ dollars ·{' '}
+            Twice the area = twice the dollars ·{' '}
             {grid ? 'one full grid square = $1 trillion' : 'grid hidden'} ·{' '}
             {query
               ? `${matches.length} matches`
@@ -251,7 +251,10 @@ export default function TrillionAtlas() {
                 ? 'grouped by type'
                 : 'ordered by amount'}
           </span>
-          <span>Click a tile to explore · Amounts overlap.</span>
+          <span>
+            {zoom === 0 ? 'All tiles in view' : 'Scroll to explore'} · Click for
+            details · Amounts overlap.
+          </span>
         </div>
         <section
           ref={viewport}
@@ -312,7 +315,7 @@ export default function TrillionAtlas() {
                       ? 'linear-gradient(to right, #172b4520 1px, transparent 1px),linear-gradient(to bottom, #172b4520 1px, transparent 1px)'
                       : 'none',
                     backgroundSize: `${unit}px ${unit}px`,
-                    backgroundPosition: `${-t.x}px ${-t.y}px`,
+                    backgroundPosition: '-1px -1px',
                   }}
                   aria-label={`${d.label}, ${amount(d.value)}, ${kindInfo[d.kind].label}`}
                   aria-pressed={selected === d.id}
@@ -467,10 +470,13 @@ export default function TrillionAtlas() {
           <p>
             Area is linear in dollars. Each full grid square has the area of
             $1T; squares clipped at block edges are partial units. The grid is a
-            scale reference, not a breakdown into subcategories. Grouping
-            rearranges the same amounts without changing their area scale.
-            Filtering rescales the mosaic. Zoom enlarges all dimensions equally.
-            Color indicates the descriptive categories added here.
+            scale reference, not a breakdown into subcategories. The layout
+            favors square-shaped tiles. At 100%, a $1T area is at least 48 × 48
+            pixels; the canvas scrolls to keep small amounts readable. Fit all
+            compresses the full chart into the viewport. Grouping rearranges the
+            same amounts without changing their area scale. Filtering rescales
+            the mosaic. Zoom enlarges all dimensions equally. Color indicates
+            the descriptive categories added here.
           </p>
           <p>
             Amounts overlap and mix time bases, including daily turnover, annual

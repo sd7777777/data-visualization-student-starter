@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { loadTs } from './load-ts.mjs';
-const { items, mosaic, groupedMosaic, comparison } = await loadTs(
+const { items, mosaic, groupedMosaic, mosaicSize, comparison } = await loadTs(
   new URL('../src/assignments/week-07/data.ts', import.meta.url),
 );
 assert.equal(items.length, 33);
@@ -64,4 +64,32 @@ const sourceValues = [
 assert.deepEqual(
   items.map((d) => d.value),
   sourceValues,
+);
+
+// User-visible sizing: near-square rectangles and usable small cells without inflated values.
+for (const [vw, vh] of [
+  [302, 640],
+  [750, 785],
+  [1402, 925],
+]) {
+  const { width, height } = mosaicSize(items, vw, vh, 1);
+  const tiles = mosaic(items, 0, 0, width, height);
+  assert.ok(
+    tiles.every((t) => Math.max(t.w / t.h, t.h / t.w) < 3),
+    'Avoid skinny tiles',
+  );
+  assert.ok(
+    tiles.every((t) => Math.min(t.w, t.h) >= 40),
+    'Small tiles stay usable',
+  );
+  const apple = tiles.find((t) => t.item.id === 'apple');
+  const wealthy = tiles.find((t) => t.item.id === 'one-percent');
+  assert.ok(
+    Math.abs((wealthy.w * wealthy.h) / (apple.w * apple.h) - 127) < 1e-8,
+  );
+  assert.ok(apple.w * apple.h >= 48 * 48 - 1e-8);
+  assert.deepEqual(mosaicSize(items, vw, vh, 0), { width: vw, height: vh });
+}
+console.log(
+  'Passed: readable sizing, bounded aspect ratios, exact 127:1 area ratio, $1T minimum area and fit overview.',
 );

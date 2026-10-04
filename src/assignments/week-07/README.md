@@ -12,8 +12,9 @@ The four categories—activity, accumulated value, costs/estimates and multiyear
 
 ## Design and implementation
 
-- The mosaic preserves the reference’s proportional-area idea. A balanced binary partition gives every value the same area-per-dollar scale within a view. Filtering refits the layout.
-- A $1T grid uses the same area scale across all blocks. Edge cells are partial units; this is a scale reference, not invented subcategories.
+- The mosaic preserves the reference’s proportional-area idea. A squarified layout favors compact rectangles and gives every value the same area-per-dollar scale within a view. Filtering refits the layout.
+- At 100%, each $1T has at least 48 × 48 pixels of area; scrolling keeps small tiles readable. “Fit all” offers a full-chart overview.
+- A $1T grid starts at each tile’s upper-left corner and uses the same area scale across all blocks. Edge cells are partial units; this is a scale reference, not invented subcategories.
 - Grouping by type preserves each block’s area. Zoom enlarges both dimensions equally, up to 300%; search highlights matches without rearranging the layout.
 - Full labels, time bases and dollar expansions appear as space permits. Small labels adapt to available space; selection exposes the full source context.
 - [D3 linear scales](https://d3js.org/d3-scale/linear) produce zero-based comparison bars in a collapsed panel.
@@ -33,6 +34,6 @@ pnpm exec oxlint src/assignments/week-07 app/week-7 src/assignments/index.ts
 pnpm build
 ```
 
-`scripts/check_trillion_atlas_browser.mjs` verifies 33 blocks, chart prominence, grouped-area invariance, unit grid, search, zoom/scroll, filters, keyboard selection, modal focus/dismissal, detail-card actions, source details, comparisons, CSV export, shared links and 320/390/768/1440px layouts. Configure `BASE_URL`, `PLAYWRIGHT_MODULE`, `CHROME_PATH` and `SCREENSHOT_DIR` as needed. `scripts/prepare_github_pages.py` prepares both asset and preload paths for GitHub Pages.
+`scripts/check_trillion_atlas_browser.mjs` verifies 33 blocks, readable tile dimensions, proportional unit grid, Fit all, chart prominence, grouped-area invariance, unit grid, search, zoom/scroll, filters, keyboard selection, modal focus/dismissal, detail-card actions, source details, comparisons, CSV export, shared links and 320/390/768/1440px layouts. Configure `BASE_URL`, `PLAYWRIGHT_MODULE`, `CHROME_PATH` and `SCREENSHOT_DIR` as needed. `scripts/prepare_github_pages.py` prepares both asset and preload paths for GitHub Pages.
 
 ![Trillion Atlas](../../../docs/assets/week-07-atlas.png)

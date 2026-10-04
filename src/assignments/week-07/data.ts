@@ -386,7 +386,7 @@ export interface Tile {
   w: number;
   h: number;
 }
-/** Balanced binary area partition. No nonlinear transform or invented minimum area. */
+/** Squarified rows minimize skinny rectangles while preserving exact dollar area. */
 export function mosaic(
   data: MoneyItem[],
   x = 0,
@@ -394,27 +394,73 @@ export function mosaic(
   w = 1000,
   h = 620,
 ): Tile[] {
-  if (!data.length) return [];
-  if (data.length === 1) return [{ item: data[0], x, y, w, h }];
-  const sorted = [...data].sort((a, b) => b.value - a.value);
-  const total = sorted.reduce((n, d) => n + d.value, 0);
-  let split = 1,
-    sum = sorted[0].value;
-  while (
-    split < sorted.length - 1 &&
-    Math.abs(sum + sorted[split].value - total / 2) < Math.abs(sum - total / 2)
-  )
-    sum += sorted[split++].value;
-  const p = sum / total;
-  return w >= h
-    ? [
-        ...mosaic(sorted.slice(0, split), x, y, w * p, h),
-        ...mosaic(sorted.slice(split), x + w * p, y, w * (1 - p), h),
-      ]
-    : [
-        ...mosaic(sorted.slice(0, split), x, y, w, h * p),
-        ...mosaic(sorted.slice(split), x, y + h * p, w, h * (1 - p)),
-      ];
+  if (!data.length || w <= 0 || h <= 0) return [];
+  const total = data.reduce((n, d) => n + d.value, 0);
+  const pending = [...data]
+    .sort((a, b) => b.value - a.value)
+    .map((item) => ({ item, area: (item.value * w * h) / total }));
+  const result: Tile[] = [];
+  let start = 0;
+  while (start < pending.length) {
+    const side = Math.min(w, h);
+    let end = start + 1;
+    let sum = pending[start].area;
+    const largest = sum;
+    const score = (area: number, smallest: number) =>
+      Math.max(
+        (side * side * largest) / (area * area),
+        (area * area) / (side * side * smallest),
+      );
+    let best = score(sum, sum);
+    while (end < pending.length) {
+      const next = pending[end].area;
+      const candidate = score(sum + next, next);
+      if (candidate > best + 1e-12) break;
+      sum += next;
+      best = candidate;
+      end++;
+    }
+    const vertical = w >= h;
+    const thickness = end === pending.length ? (vertical ? w : h) : sum / side;
+    let cursor = vertical ? y : x;
+    for (let i = start; i < end; i++) {
+      const length =
+        i === end - 1
+          ? (vertical ? y + h : x + w) - cursor
+          : pending[i].area / thickness;
+      result.push({
+        item: pending[i].item,
+        x: vertical ? x : cursor,
+        y: vertical ? cursor : y,
+        w: vertical ? thickness : length,
+        h: vertical ? length : thickness,
+      });
+      cursor += length;
+    }
+    if (vertical) {
+      x += thickness;
+      w -= thickness;
+    } else {
+      y += thickness;
+      h -= thickness;
+    }
+    start = end;
+  }
+  return result;
+}
+
+/** A readable $1T unit, with explicit opt-in to a compressed overview. */
+export function mosaicSize(
+  data: MoneyItem[],
+  width: number,
+  height: number,
+  zoom: number,
+) {
+  if (zoom === 0) return { width, height };
+  const baseWidth = Math.max(width, 780);
+  const total = data.reduce((n, d) => n + d.value, 0);
+  const baseHeight = Math.max(height, (total * 48 * 48) / baseWidth);
+  return { width: baseWidth * zoom, height: baseHeight * zoom };
 }
 export function comparison(a: MoneyItem, b: MoneyItem) {
   return {

@@ -34,6 +34,26 @@ try {
   );
   assert.equal(await page.locator('#compare').evaluate((e) => e.open), false);
   assert.equal(await page.locator('#sources').evaluate((e) => e.open), false);
+  const tileSizes = await page
+    .locator('.ta-tile')
+    .evaluateAll((nodes) =>
+      nodes.map((e) => ({
+        w: e.getBoundingClientRect().width,
+        h: e.getBoundingClientRect().height,
+      })),
+    );
+  assert.ok(
+    tileSizes.every((t) => Math.min(t.w, t.h) >= 40),
+    'Default tiles must remain usable',
+  );
+  const unitArea = await page
+    .locator('#tile-apple')
+    .evaluate((e) => parseFloat(getComputedStyle(e).backgroundSize) ** 2);
+  const apple = await page.locator('#tile-apple').boundingBox();
+  assert.ok(
+    Math.abs(apple.width * apple.height - unitArea) < 3,
+    '$1T grid must match the $1T tile area',
+  );
   await page.screenshot({ path: `${shots}/week-07-atlas.png` });
   await page.screenshot({
     path: `${shots}/week-07-desktop.png`,
@@ -138,7 +158,7 @@ try {
       () =>
         Math.abs(
           document.querySelector('.ta-mosaic').clientWidth -
-            document.querySelector('.ta-viewport').clientWidth,
+            Math.max(780, document.querySelector('.ta-viewport').clientWidth),
         ) < 2,
     );
     assert.ok(
@@ -171,6 +191,27 @@ try {
     if (width === 390)
       await page.screenshot({ path: `${shots}/week-07-mobile-detail.png` });
     await page.keyboard.press('Escape');
+    await page.getByLabel('Mosaic zoom').selectOption('0');
+    await page.waitForFunction(
+      () =>
+        Math.abs(
+          document.querySelector('.ta-mosaic').clientWidth -
+            document.querySelector('.ta-viewport').clientWidth,
+        ) < 2,
+    );
+    assert.ok(
+      await page
+        .locator('.ta-viewport')
+        .evaluate(
+          (e) =>
+            e.scrollWidth <= e.clientWidth + 1 &&
+            e.scrollHeight <= e.clientHeight + 1,
+        ),
+      'Fit all must show the entire chart',
+    );
+    if (width === 1440)
+      await page.screenshot({ path: `${shots}/week-07-fit.png` });
+    await page.getByLabel('Mosaic zoom').selectOption('1');
   }
   await page.goto(`${base}?a=world&b=us-gdp#compare`, {
     waitUntil: 'networkidle',
@@ -182,7 +223,7 @@ try {
   assert.equal(await page.locator('#compare-a').inputValue(), 'us-gdp');
   assert.deepEqual(errors, []);
   console.log(
-    'Passed: 33-value mosaic, emoji labels, modal details, keyboard dismissal and focus, zoom and compare actions, chart prominence, group area invariance, grid, search, zoom and scroll, keyboard filtering, selection, comparisons, CSV, collapsed extras, responsive layouts, shared URLs, no page errors.',
+    'Passed: 33-value mosaic, readable tile sizes, exact unit grid, Fit all, emoji labels, modal details, keyboard dismissal and focus, zoom and compare actions, chart prominence, group area invariance, grid, search, zoom and scroll, keyboard filtering, selection, comparisons, CSV, collapsed extras, responsive layouts, shared URLs, no page errors.',
   );
 } finally {
   await browser.close();

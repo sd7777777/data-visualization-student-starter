@@ -4,6 +4,7 @@ export const chapters: [string, string, FaIconName][] = [
   ['week-3', 'Specialties', 'chart'],
   ['wonder-lab', 'Wonder lab', 'shuffle'],
   ['place', 'Compare places', 'compare'],
+  ['week-8', 'Brand & generic', 'clinical'],
   ['scale', 'Concentration', 'cost'],
   ['composition', 'Cost share', 'share'],
   ['mix', 'Clinical mix', 'clinical'],

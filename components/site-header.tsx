@@ -68,6 +68,7 @@ export function SiteHeader(
             <FaIcon name="book" /> Resources
           </summary>
           <div>
+            <a href="#week-8">Week 8 · Brand & generic <FaIcon name="clinical" /></a>
             <a href="#week-6">Week 6 · Project V1 <FaIcon name="explore" /></a>
             <a href="https://github.com/sd7777777/data-visualization-student-starter/blob/main/docs/PROJECT_DIRECTION.md">
               Project proposal <FaIcon name="external" />

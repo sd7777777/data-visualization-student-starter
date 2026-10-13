@@ -47,7 +47,7 @@ export function ReadingNav({ children }: { children?: ReactNode }) {
         <FaIcon name="up" />
       </a>
       <div>
-        {chapters.slice(0, 8).map(([id, label, icon]) => (
+        {chapters.slice(0, 9).map(([id, label, icon]) => (
           <a
             key={id}
             href={`#${id}`}

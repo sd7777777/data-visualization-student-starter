@@ -9,11 +9,19 @@ export interface AssignmentEntry {
     | '/#week-4'
     | '/#week-5'
     | '/#week-6'
+    | '/#week-8'
     | '/week-7';
   sourceDirectory: string;
 }
 
 export const assignments: AssignmentEntry[] = [
+  {
+    id: 'week-08',
+    name: 'Iterate your Project — Brand and generic drugs',
+    navLabel: 'Brand & generic',
+    path: '/#week-8',
+    sourceDirectory: 'src/assignments/week-08',
+  },
   {
     id: 'week-07',
     name: 'Recreate an Inspirational Piece — Trillion Atlas',

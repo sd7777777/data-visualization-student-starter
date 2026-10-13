@@ -30,3 +30,18 @@
 The script aggregates totals for the national view and each provider state/territory. It retains the 32 specialties with the highest total drug cost in each geography, state profiles for the 18 leading national specialties, fixed-bin distributions over all provider records, completeness and suppression-marker counts for all 84 source fields, and the ten highest-cost provider records for supporting detail. It does not impute suppressed values.
 
 Provider beneficiary counts are not summed into a geography-level unique-beneficiary figure because one beneficiary may receive prescriptions from multiple providers.
+
+## `drug-mix.json` — brand-name and generic drugs (Week 8)
+
+Refresh script: `scripts/prepare_drug_mix.py` (same source CSV). About 100 KB.
+
+Each geography has a `total` and one entry per specialty in `specialties` (the 30 highest-cost national specialties, 97% of national drug cost; `null` where a place has no records). Every entry is an array in this order:
+
+| Position | Meaning |
+| --- | --- |
+| 0 `records` | Provider records |
+| 1 `claims`, 2 `cost` | All claims and total drug cost |
+| 3 `coveredRecords`, 4 `coveredClaims`, 5 `coveredCost` | The same, restricted to records whose generic claims and cost are reported |
+| 6 `genericClaims`, 7 `genericCost` | Generic (ANDA) claims and cost within covered records |
+
+Brand-name (NDA, BLA, authorized generic) plus CMS's small "other" category is `covered − generic`; brand + generic + other equals each record's total. Records with suppressed generic values are excluded rather than imputed. `meta.otherShareOfNonGeneric` reports how much of the non-generic group is "other", measured where all three subgroups are reported. Drug cost is gross of manufacturer rebates.

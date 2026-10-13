@@ -1,6 +1,21 @@
 # Medicare Part D explorer: updated project proposal
 
-Week 06 · Project V1 · September 29, 2026
+Week 08 · Iteration · October 13, 2026 (Week 6 Project V1 below)
+
+## Week 8 iteration — brand-name and generic drugs
+
+[Open Week 8](https://sd7777777.github.io/data-visualization-student-starter/#week-8) · [Week 8 source and method](../src/assignments/week-08/README.md)
+
+Earlier versions compared specialties and places by total cost, volume and cost per claim. They could show that a specialty was expensive, but not why. Week 8 adds the first explanatory measure: the CMS brand-name/generic split. Nationally, brand-name drugs are 15% of claims but 88% of drug cost, and an average brand-name claim cost 42 times as much as a generic one.
+
+The new view follows the project's select → compare pattern. A claims-versus-cost “flip” states the headline for the chosen geography. A specialty chart shows where the gap is widest; Dermatology and Rheumatology lead, and Endocrinology stands apart with a majority of brand-name claims. A state comparison then tests whether a specialty's gap holds across places. Selections feed the existing page-wide geography and specialty state.
+
+![Week 8: brand-name drugs are 15% of claims but 88% of drug cost.](assets/week-08-overview.png)
+
+The data step is separate from `summary.json`, so existing views and checks are untouched. Suppressed generic values are excluded rather than imputed (99.5% of claims remain). Cost is gross of manufacturer rebates, so the net brand-name share would be lower. The view does not show whether generic alternatives existed.
+
+**Next:** test the select → compare → record workflow with a reader, let notebook captures include brand/generic evidence, and add a second year once field definitions are confirmed to match.
+
 
 ## Project V1 — implemented comparison workflow
 

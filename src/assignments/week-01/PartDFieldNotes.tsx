@@ -29,6 +29,8 @@ import {
 import { ScrollStory } from '@/components/analysis/scroll-story';
 import { WonderLab } from '@/components/analysis/wonder-lab';
 import { ProjectV1 } from '../week-06/ProjectV1';
+import { BrandGap } from '../week-08/BrandGap';
+import type { DrugMixData } from '@/lib/drug-mix';
 import {
   defaultComparison,
   readComparisonLink,
@@ -52,6 +54,8 @@ export default function PartDFieldNotes() {
   const [wonderMode, setWonderMode] = useState<WonderMode>('map');
   const [searchOpen, setSearchOpen] = useState(false);
   const [data, setData] = useState<Dataset | null>(null);
+  // undefined while loading, null if the file could not be read.
+  const [drugMix, setDrugMix] = useState<DrugMixData | null>();
   const [areaCode, setAreaCode] = useState('US');
   const [lens, setLens] = useState<Lens>('economics');
   const [axisScale, setAxisScale] = useState<AxisScale>('log');
@@ -68,14 +72,28 @@ export default function PartDFieldNotes() {
   const [distribution, setDistribution] = useState('claims');
   useEffect(() => {
     const controller = new AbortController();
+    // Loaded alongside the main summary so Week 8 does not shift later anchors.
+    // A slow file gets a short grace period, then fills in when it arrives.
+    const drugMixRequest = fetch('./data/prescriber-summary/drug-mix.json', {
+      signal: controller.signal,
+    })
+      .then((r) => (r.ok ? (r.json() as Promise<DrugMixData>) : null))
+      .catch(() => null);
+    void drugMixRequest.then((mix) => {
+      if (!controller.signal.aborted) setDrugMix(mix);
+    });
+    const drugMixGrace = Promise.race([
+      drugMixRequest,
+      new Promise<undefined>((resolve) => setTimeout(resolve, 5000)),
+    ]);
     void fetch('./data/prescriber-summary/summary.json', {
       signal: controller.signal,
     })
       .then((r) => {
         if (!r.ok) throw new Error('Dataset unavailable');
-        return r.json();
+        return Promise.all([r.json(), drugMixGrace]);
       })
-      .then((raw) => {
+      .then(([raw]) => {
         const payload = raw as Dataset;
         try {
           const settings = readComparisonLink(window.location.search, payload);
@@ -508,6 +526,14 @@ export default function PartDFieldNotes() {
         onNotice={setComparisonNotice}
       />
 
+      <BrandGap
+        data={drugMix}
+        areaCode={area.code}
+        onArea={changeArea}
+        selected={specialty.specialty}
+        onSelect={setSelected}
+      />
+
       <section id="scale" className="section-wrap simple-views">
         <div className="story-question">
           <b>
@@ -766,9 +792,14 @@ export default function PartDFieldNotes() {
       <details className="course-index">
         <summary>
           <FaIcon name="book" /> Coursework trail{' '}
-          <span>Weeks 01–07 · sources and assignment milestones</span>
+          <span>Weeks 01–08 · sources and assignment milestones</span>
         </summary>
         <nav className="week-directory" aria-label="Canvas assignment index">
+          <a href="#week-8">
+            <b>Week 08</b>
+            <span>Brand &amp; generic</span>
+            <small>claims vs. cost · specialty gap · states</small>
+          </a>
           <a
             href={
               process.env.NODE_ENV === 'development'

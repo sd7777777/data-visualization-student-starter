@@ -1,0 +1,311 @@
+/* Week 8 brand/generic view. Generic = teal, brand-name = terracotta throughout. */
+.brand-gap {
+  --generic: var(--teal);
+  --brand: var(--orange);
+  scroll-margin-top: 90px;
+}
+.brand-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+}
+.brand-controls label {
+  display: grid;
+  gap: 6px;
+  font: 700 13px var(--font-data);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.brand-controls select {
+  min-width: 260px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--strong-rule);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font: 16px var(--font-body);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.brand-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--link);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--link);
+  font: 700 15px var(--font-body);
+  cursor: pointer;
+}
+.brand-download:hover {
+  background: var(--mint-wash);
+}
+.brand-download:focus-visible,
+.brand-controls select:focus-visible,
+.brand-row:focus-visible,
+.brand-state:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+.brand-figure {
+  margin: 0 0 22px;
+}
+.brand-figure h3 {
+  margin: 6px 0 0;
+}
+.brand-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font: 700 14px var(--font-data);
+  color: var(--muted);
+}
+.brand-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border-radius: 50%;
+}
+.brand-legend .generic-key::before {
+  border-radius: 2px;
+  background: var(--generic);
+}
+.brand-legend .brand-key::before {
+  border-radius: 2px;
+  background: var(--brand);
+}
+.brand-legend .claim-key::before {
+  background: var(--panel);
+  border: 2.5px solid var(--brand);
+  width: 9px;
+  height: 9px;
+}
+.brand-legend .cost-key::before {
+  background: var(--brand);
+}
+.brand-legend .state-key::before {
+  background: var(--navy);
+}
+.brand-legend .national-key::before {
+  border-radius: 0;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  background: var(--ink);
+}
+.flip-chart {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  column-gap: 16px;
+  align-items: center;
+  padding: 18px 28px 22px;
+}
+.flip-outside {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  min-height: 24px;
+  align-items: end;
+  padding-bottom: 4px;
+  font: 700 16px var(--font-data);
+}
+.flip-outside .generic-text {
+  color: var(--generic);
+}
+.flip-outside .brand-text {
+  color: var(--brand);
+}
+.flip-name {
+  grid-column: 1;
+  grid-row: span 2;
+  align-self: end;
+  margin-bottom: 13px;
+  font: 700 16px var(--font-data);
+}
+.flip-track {
+  display: flex;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.flip-track > span {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #fff;
+  font: 700 16px var(--font-data);
+}
+.flip-generic {
+  justify-content: flex-start;
+  padding-left: 12px;
+  background: var(--generic);
+}
+.flip-brand {
+  justify-content: flex-end;
+  padding-right: 12px;
+  background: var(--brand);
+}
+.flip-band {
+  grid-column: 2;
+  display: block;
+  width: 100%;
+  height: 34px;
+}
+.flip-band polygon {
+  fill: var(--brand);
+  opacity: 0.16;
+}
+.brand-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--grid);
+}
+.brand-stats p {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 16px 28px;
+  border-left: 1px solid var(--grid);
+}
+.brand-stats p:first-child {
+  border-left: 0;
+}
+.brand-stats b {
+  font-size: 24px;
+  color: var(--ink);
+}
+.brand-stats p:nth-child(-n + 3) b {
+  color: var(--brand);
+}
+.brand-stats p:nth-child(2) b {
+  color: var(--generic);
+}
+.brand-stats span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.brand-sort {
+  padding-top: 4px;
+}
+.brand-row {
+  cursor: pointer;
+}
+.brand-row-bg {
+  fill: transparent;
+}
+.brand-row:hover .brand-row-bg {
+  fill: var(--mint-wash);
+}
+.brand-row-bg.active,
+.brand-row:hover .brand-row-bg.active {
+  fill: var(--wash);
+}
+.brand-row[aria-pressed='true'] .pair-name {
+  font-weight: 700;
+}
+.brand-connector {
+  stroke: var(--brand);
+  stroke-width: 3;
+  opacity: 0.45;
+}
+.claim-dot {
+  fill: var(--panel);
+  stroke: var(--brand);
+  stroke-width: 2.5;
+}
+.cost-dot {
+  fill: var(--brand);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.brand-reference {
+  stroke: var(--strong-rule);
+  stroke-dasharray: 4 4;
+}
+.brand-readout {
+  min-height: 3.2em;
+}
+.brand-state {
+  cursor: pointer;
+}
+.brand-state circle {
+  fill: var(--navy);
+  fill-opacity: 0.75;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.brand-state text {
+  fill: var(--ink);
+  font: 700 13px var(--font-data);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 4px;
+}
+.brand-state:hover circle,
+.brand-state:focus-visible circle {
+  fill: var(--link);
+  fill-opacity: 1;
+}
+.brand-state.active circle {
+  fill: var(--brand);
+  fill-opacity: 1;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.brand-state.active text {
+  fill: var(--brand);
+  font-size: 15px;
+}
+.brand-national path {
+  fill: var(--ink);
+}
+.brand-national text {
+  fill: var(--ink);
+  font: 700 14px var(--font-data);
+}
+@media (max-width: 760px) {
+  .brand-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .brand-stats p {
+    padding: 14px 16px;
+  }
+  .brand-stats p:nth-child(3) {
+    border-left: 0;
+  }
+  .brand-controls select {
+    min-width: 0;
+    width: 100%;
+  }
+  .brand-controls label {
+    flex: 1 1 100%;
+  }
+  .flip-chart {
+    grid-template-columns: 1fr;
+    padding: 14px 16px 18px;
+  }
+  .flip-name,
+  .flip-outside,
+  .flip-band {
+    grid-column: 1;
+  }
+  .flip-name {
+    grid-row: auto;
+    margin: 6px 0 0;
+  }
+  .flip-track > span {
+    font-size: 15px;
+  }
+}

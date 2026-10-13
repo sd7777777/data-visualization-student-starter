@@ -8,6 +8,7 @@ A connected research workspace for exploring CMS 2024 data. The opening geograph
 
 ## Current capabilities
 
+- See where brand-name and generic drugs diverge: brand-name drugs are 15% of national claims but 88% of drug cost. Compare specialties by that gap and check whether it holds across states (Week 8).
 - Explore 63 source geographies, up to 32 leading specialties per geography, and state profiles for 18 national specialties.
 - Inspect one specialty or build a group with rectangular brushing or a keyboard-accessible checkbox picker.
 - Find similar places or larger contrasts using equally weighted specialty gaps. Rankings require the same complete comparison set in every candidate; missing values never become zero.
@@ -43,10 +44,12 @@ src/assignments/
   week-04/                  Legibility revision of the first visual
   week-05/                  Group selection and linked comparison
   week-06/                  Project V1 guided comparison workflow
+  week-08/                  Brand-name vs. generic iteration
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
   prepare_data.py           Repeatable CMS preprocessing pipeline
+  prepare_drug_mix.py       Brand/generic summary for Week 8
   check_geography.mjs       Layout, calculation, coverage, and CSV tests
 docs/
   PROJECT_DIRECTION.md      Research, task, and design rationale
@@ -67,6 +70,7 @@ The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas rout
 - **Week 5 — Interaction and Updated Sketches:** a new copy of Week 4 adds rectangle selection, keyboard/touch selection by name, linked exact-value comparison, and weighted group summaries. The [updated proposal](docs/PROJECT_DIRECTION.md) includes screenshots and a new end-of-course sketch.
 - **Week 6 — Project V1:** [guided comparison workflow](src/assignments/week-06/README.md) with three starting questions, linked geographic views, and a field notebook. [Open Week 6](https://sd7777777.github.io/data-visualization-student-starter/#week-6). The [project document](docs/PROJECT_DIRECTION.md) now distinguishes the implemented workflow from future evaluation.
 - **Week 7 — Recreate an Inspirational Piece:** [Trillion Atlas](src/assignments/week-07/README.md), a historical recreation of McCandless’s proportional money rectangles with all 33 original amounts, zoom, type grouping, a $1T grid, source context, pair comparisons and CSV export. Local draft: `http://localhost:3017/week-7`; static export: `week-7.html`. Prepared for GitHub Pages; Canvas submission remains with the student.
+- **Week 8 — Iterate your Project:** [brand-name and generic drugs](src/assignments/week-08/README.md). New preprocessing adds CMS's brand/generic fields; a claims-versus-cost “flip”, a specialty gap chart and a state comparison are linked to the page's geography and specialty selection. [Open Week 8](https://sd7777777.github.io/data-visualization-student-starter/#week-8).
 - **Project extensions:** Figures 02–13 continue the same dataset story and are labeled separately from the weekly milestones. The [linked geography workspace](docs/GEOGRAPHY_WORKSPACE.md) replaces the earlier tile map and ranked-state view; their source remains preserved.
 
 ## Work locally
@@ -82,7 +86,7 @@ Open the local address shown in the terminal. The original visualization logic l
 
 ## Refresh the data
 
-Run `pnpm check` for all nine calculation/persistence suites and TypeScript, then `pnpm build` for the static export. The interaction checks cover brushing geometry, weighted calculations, and all 63 geographies. Geography checks verify metric definitions, CSV escaping and coverage, and 660 deterministic distribution layouts with no dot overlaps or horizontal-value changes. Browser checks should also cover selection by mouse and keyboard, switching scales, geography reset, group handoff, CSV download, and narrow-screen horizontal scrolling.
+Run `pnpm check` for all ten calculation/persistence suites and TypeScript, then `pnpm build` for the static export. The interaction checks cover brushing geometry, weighted calculations, and all 63 geographies. Geography checks verify metric definitions, CSV escaping and coverage, and 660 deterministic distribution layouts with no dot overlaps or horizontal-value changes. Browser checks should also cover selection by mouse and keyboard, switching scales, geography reset, group handoff, CSV download, and narrow-screen horizontal scrolling.
 
 Download the current provider-level CSV from the [CMS dataset page](https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/medicare-part-d-prescribers-by-provider), then run:
 
@@ -90,7 +94,13 @@ Download the current provider-level CSV from the [CMS dataset page](https://data
 python3 scripts/prepare_data.py /path/to/provider-file.csv public/data/prescriber-summary/summary.json
 ```
 
-The preprocessing script streams the source rather than loading the 750 MB file into memory. Keep the source CSV outside the repository; only commit the compact JSON result.
+Then refresh the Week 8 brand/generic summary from the same file:
+
+```bash
+python3 scripts/prepare_drug_mix.py /path/to/provider-file.csv public/data/prescriber-summary/drug-mix.json
+```
+
+The preprocessing scripts stream the source rather than loading the 750 MB file into memory. Keep the source CSV outside the repository; only commit the compact JSON result.
 
 ## Publish with GitHub Desktop
 

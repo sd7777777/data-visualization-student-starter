@@ -1,6 +1,16 @@
 # Medicare Part D explorer: updated project proposal
 
-Week 08 · Iteration · October 13, 2026 (Week 6 Project V1 below)
+Week 10 · New interaction · October 2026 (Week 8 iteration and Week 6 Project V1 below)
+
+## Week 10 interaction — does the gap have a region?
+
+[Open Week 10](https://sd7777777.github.io/data-visualization-student-starter/week-10.html) · [Week 10 source and method](../src/assignments/week-10/README.md)
+
+Week 8's state comparison could show *that* states differ, but not whether geography is part of the pattern. Week 10 copies that scatterplot and adds an interactive Census-region color legend. Hovering previews a region and clicking keeps it. Each region's states and median then appear in the scatterplot, a linked tile map and a chart covering 28 specialties. In 15 of those 28, the South has the highest median brand-name share of drug cost. Psychiatry shows one of the clearest splits: the South's median is 82.7% and the West's 78.1%.
+
+![Week 10: Psychiatry with the South and West pinned.](assets/week-10-overview.png)
+
+This supports the project's compare step: readers can now group places as well as pick them one at a time. **Next:** carry the region selection into Compare places and the field notebook, and explore whether the regional pattern holds for net (post-rebate) cost, where data allow.
 
 ## Week 8 iteration — brand-name and generic drugs
 

@@ -10,6 +10,7 @@ const suites = [
   'notebook',
   'research_workflow',
   'drug_mix',
+  'regions',
 ];
 for (const suite of suites) {
   const result = spawnSync(process.execPath, [`scripts/check_${suite}.mjs`], {

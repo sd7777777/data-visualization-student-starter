@@ -300,6 +300,7 @@ export default function RegionalLens() {
       <header className="rl-top">
         <a href={base}>← Explorer</a>
         <a href={`${base}#week-8`}>Week 8 original</a>
+        <a href={`${base}${process.env.NODE_ENV === 'development' ? 'week-11' : 'week-11.html'}`}>Week 11 iteration →</a>
       </header>
 
       <section className="rl-intro" aria-labelledby="rl-title">

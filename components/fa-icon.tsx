@@ -31,6 +31,7 @@ import {
   faPenToSquare,
   faLink,
   faFileImport,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -66,6 +67,7 @@ const icons = {
   write: faPenToSquare,
   link: faLink,
   import: faFileImport,
+  close: faXmark,
 };
 
 export type FaIconName = keyof typeof icons;

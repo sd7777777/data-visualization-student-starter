@@ -68,8 +68,11 @@ export function SiteHeader(
             <FaIcon name="book" /> Resources
           </summary>
           <div>
+            <a href={process.env.NODE_ENV === 'development' ? './week-11' : './week-11.html'}>
+              Week 11 · Regional lens <FaIcon name="place" />
+            </a>
             <a href={process.env.NODE_ENV === 'development' ? './week-10' : './week-10.html'}>
-              Week 10 · Regional lens <FaIcon name="place" />
+              Week 10 · First regional lens <FaIcon name="place" />
             </a>
             <a href="#week-8">Week 8 · Brand & generic <FaIcon name="clinical" /></a>
             <a href="#week-6">Week 6 · Project V1 <FaIcon name="explore" /></a>

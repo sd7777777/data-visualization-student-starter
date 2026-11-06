@@ -1,6 +1,18 @@
 # Medicare Part D explorer: updated project proposal
 
-Week 10 · New interaction · October 2026 (Week 8 iteration and Week 6 Project V1 below)
+Week 11 · Iteration · November 2026 (Week 10 interaction, Week 8 iteration and Week 6 Project V1 below)
+
+## Week 11 iteration — from a prototype toward a finished piece
+
+[Open Week 11](https://sd7777777.github.io/data-visualization-student-starter/week-11.html) · [Week 11 source and method](../src/assignments/week-11/README.md)
+
+Feedback on Week 10 set the plan. The map now uses hue for the region and lightness for the value. Regions get their own rows, so tight clusters no longer hide the pattern, and the Week 10 scatterplot remains one click away with each region's distribution along its axes. A pinned state now carries through the page and is compared with all four regional medians in every specialty. Clearing a selection and reading per-claim costs are both simpler.
+
+A new measure switch produced the main finding of this round. The South has the highest median brand-name share of drug cost in 15 of 28 specialties, but the highest share of claims in only 8. The Northeast leads on claims, in 9. That moves the question from "where are brand-name drugs prescribed more?" toward "where do brand-name claims make up more of the cost?"
+
+![Week 11: Psychiatry with the South and West pinned and Texas compared with all four regions.](assets/week-11-overview.png)
+
+**Next:** bring this view and the main explorer together as one finished piece, carry the region and state selection into Compare places and the field notebook, and test the select → compare → record workflow with a reader.
 
 ## Week 10 interaction — does the gap have a region?
 

@@ -11,15 +11,23 @@ export interface AssignmentEntry {
     | '/#week-6'
     | '/#week-8'
     | '/week-7'
-    | '/week-10';
+    | '/week-10'
+    | '/week-11';
   sourceDirectory: string;
 }
 
 export const assignments: AssignmentEntry[] = [
   {
+    id: 'week-11',
+    name: 'Iterate your Project — Regional lens, rebuilt from feedback',
+    navLabel: 'Regional lens',
+    path: '/week-11',
+    sourceDirectory: 'src/assignments/week-11',
+  },
+  {
     id: 'week-10',
     name: 'Add a New Interaction — Regional lens',
-    navLabel: 'Regional lens',
+    navLabel: 'Regional lens (Week 10)',
     path: '/week-10',
     sourceDirectory: 'src/assignments/week-10',
   },

@@ -10,6 +10,7 @@ A connected research workspace for exploring CMS 2024 data. The opening geograph
 
 - See where brand-name and generic drugs diverge: brand-name drugs are 15% of national claims but 88% of drug cost. Compare specialties by that gap and check whether it holds across states (Week 8).
 - Ask whether the gap has a region: an interactive Census-region color legend links the state scatterplot, a tile map and every specialty. The South has the highest median brand-name share of drug cost in 15 of 28 specialties (Week 10).
+- See regional differences directly: the Week 11 lens gives each Census region its own row, uses hue for the region and lightness for the value on a tile map, and compares any state with all four regions across every specialty. The South leads on cost share in 15 of 28 specialties but on claim share in only 8.
 - Explore 63 source geographies, up to 32 leading specialties per geography, and state profiles for 18 national specialties.
 - Inspect one specialty or build a group with rectangular brushing or a keyboard-accessible checkbox picker.
 - Find similar places or larger contrasts using equally weighted specialty gaps. Rankings require the same complete comparison set in every candidate; missing values never become zero.
@@ -46,6 +47,8 @@ src/assignments/
   week-05/                  Group selection and linked comparison
   week-06/                  Project V1 guided comparison workflow
   week-08/                  Brand-name vs. generic iteration
+  week-10/                  Regional lens with an interactive legend
+  week-11/                  Regional lens rebuilt from feedback
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
@@ -60,7 +63,7 @@ docs/
   deploy-pages.yml          GitHub Pages deployment
 ```
 
-The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas route, and Week 10 a separate regional lens route (`week-10.html`). Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
+The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas route, and Weeks 10 and 11 separate regional lens routes (`week-10.html`, `week-11.html`). Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
 
 ## Canvas assignment map
 
@@ -73,6 +76,7 @@ The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas rout
 - **Week 7 — Recreate an Inspirational Piece:** [Trillion Atlas](src/assignments/week-07/README.md), a historical recreation of McCandless’s proportional money rectangles with all 33 original amounts, zoom, type grouping, a $1T grid, source context, pair comparisons and CSV export. Local draft: `http://localhost:3017/week-7`; static export: `week-7.html`. Prepared for GitHub Pages; Canvas submission remains with the student.
 - **Week 8 — Iterate your Project:** [brand-name and generic drugs](src/assignments/week-08/README.md). New preprocessing adds CMS's brand/generic fields; a claims-versus-cost “flip”, a specialty gap chart and a state comparison are linked to the page's geography and specialty selection. [Open Week 8](https://sd7777777.github.io/data-visualization-student-starter/#week-8).
 - **Week 10 — Add a New Interaction:** [regional lens](src/assignments/week-10/README.md). A copy of the Week 8 state scatterplot with an interactive color legend: hover a Census region to preview it, click to keep it, and see its states and median in the scatterplot, a linked tile map and an every-specialty chart. [Open Week 10](https://sd7777777.github.io/data-visualization-student-starter/week-10.html).
+- **Week 11 — Iterate your Project:** [regional lens, rebuilt from feedback](src/assignments/week-11/README.md). A map with hue for the region and lightness for the value, region strips that glide into a scatterplot with regional distributions, a state compared with all four regions across every specialty, click-away clearing and a cost-versus-claims switch. [Open Week 11](https://sd7777777.github.io/data-visualization-student-starter/week-11.html).
 - **Project extensions:** Figures 02–13 continue the same dataset story and are labeled separately from the weekly milestones. The [linked geography workspace](docs/GEOGRAPHY_WORKSPACE.md) replaces the earlier tile map and ranked-state view; their source remains preserved.
 
 ## Work locally

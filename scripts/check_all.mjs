@@ -12,6 +12,7 @@ const suites = [
   'drug_mix',
   'regions',
   'regional_lens',
+  'cost_ratio',
 ];
 for (const suite of suites) {
   const result = spawnSync(process.execPath, [`scripts/check_${suite}.mjs`], {

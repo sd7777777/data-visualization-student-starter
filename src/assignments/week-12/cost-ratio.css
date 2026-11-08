@@ -1,0 +1,385 @@
+/* Week 12 brand-to-generic cost ratio. Shares the explorer's ivory/teal tokens from app/globals.css. */
+.cr12 {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 12px 20px 56px;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+.cr12 *,
+.cr12 *::before {
+  box-sizing: border-box;
+}
+.cr12 h1,
+.cr12 h2,
+.cr12 p,
+.cr12 ul,
+.cr12 dl,
+.cr12 dd {
+  margin: 0;
+}
+.cr12 ul {
+  padding: 0;
+  list-style: none;
+}
+.cr12 button,
+.cr12 select {
+  font: inherit;
+  color: inherit;
+}
+.cr12 button:focus-visible,
+.cr12 select:focus-visible,
+.cr12 summary:focus-visible,
+.cr12 a:focus-visible,
+.cr12-row:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+.cr12-empty {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.cr12 .fa-icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+.cr12-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cr12-eyebrow {
+  color: var(--link);
+  font: 700 12px var(--font-data);
+  letter-spacing: 0.08em;
+}
+.cr12-intro h1 {
+  max-width: 980px;
+  margin: 8px 0 10px;
+  font: 700 clamp(30px, 4.6vw, 46px) / 1.06 'Times New Roman', Times, serif;
+  letter-spacing: -0.02em;
+}
+.cr12-intro > p:nth-of-type(2) {
+  max-width: 860px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.cr12-intro b {
+  color: var(--ink);
+}
+
+.cr12-controls {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 24px;
+  margin: 20px 0 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.cr12-controls label,
+.cr12-sort {
+  display: grid;
+  gap: 4px;
+}
+.cr12-controls label span,
+.cr12-sort > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+.cr12-controls select {
+  min-height: 38px;
+  min-width: 190px;
+  padding: 0 8px;
+  border: 1px solid var(--strong-rule);
+  background: var(--panel);
+}
+.cr12-seg {
+  display: flex;
+}
+.cr12-seg button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--strong-rule);
+  background: var(--panel);
+  cursor: pointer;
+}
+.cr12-seg button + button {
+  border-left: 0;
+}
+.cr12-seg button:hover {
+  background: var(--mint-wash);
+}
+.cr12-seg button[aria-pressed='true'] {
+  background: var(--link);
+  border-color: var(--link);
+  color: white;
+  font-weight: 700;
+}
+.cr12-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-left: auto !important;
+  padding-bottom: 8px !important;
+  font-size: 14px;
+}
+.cr12-legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.cr12-legend i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.cr12-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+.cr12-chart {
+  min-width: 0;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}
+.cr12-chart svg {
+  display: block;
+}
+.cr12-grid {
+  stroke: var(--grid);
+}
+.cr12-tick {
+  fill: var(--muted);
+  font-size: 12px;
+}
+.cr12-axis {
+  fill: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+.cr12-row {
+  cursor: pointer;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.15s;
+}
+.cr12-row:focus {
+  outline: none;
+}
+.cr12-row.dim {
+  opacity: 0.35;
+}
+.cr12-row rect.even {
+  fill: var(--mint-wash);
+  fill-opacity: 0.55;
+}
+.cr12-row rect.odd {
+  fill: transparent;
+}
+.cr12-row.active rect {
+  fill: var(--sun-wash);
+  fill-opacity: 0.6;
+}
+.cr12-label {
+  fill: var(--ink);
+  font-size: 13px;
+}
+.cr12-row.active .cr12-label,
+.cr12-row.active .cr12-ratio {
+  font-weight: 700;
+}
+.cr12-link {
+  stroke: var(--strong-rule);
+  stroke-width: 2;
+}
+.cr12-row.active .cr12-link {
+  stroke: var(--ink);
+}
+.cr12-value {
+  fill: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 3px;
+}
+.cr12-ratio {
+  fill: var(--ink);
+  font: 700 13px var(--font-data);
+}
+
+.cr12-card {
+  position: sticky;
+  top: 86px;
+  padding: 16px;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}
+.cr12-card h2 {
+  margin: 6px 0 4px;
+  font: 700 22px/1.15 'Times New Roman', Times, serif;
+}
+.cr12-multiple {
+  color: var(--orange);
+  font: 700 46px/1.05 'Times New Roman', Times, serif;
+}
+.cr12-multiple small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font: 400 13px var(--font-body);
+}
+.cr12-card dl {
+  margin: 12px 0;
+  border-top: 1px solid var(--grid);
+}
+.cr12-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--grid);
+  font-size: 14px;
+}
+.cr12-card dt {
+  color: var(--muted);
+}
+.cr12-card dd {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cr12-flag {
+  margin-bottom: 8px !important;
+  padding: 8px 10px;
+  background: var(--sun-wash);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.cr12-hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.cr12-note {
+  margin-top: 8px !important;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.cr12-table {
+  margin-top: 16px;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}
+.cr12-table summary {
+  padding: 12px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cr12-table > div {
+  overflow-x: auto;
+}
+.cr12-table table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cr12-table th,
+.cr12-table td {
+  padding: 7px 16px;
+  border-top: 1px solid var(--grid);
+  text-align: right;
+}
+.cr12-table th:first-child {
+  text-align: left;
+  font-weight: 400;
+}
+.cr12-table thead th {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.cr12-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--strong-rule);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.cr12-notes h2 {
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 15px;
+}
+.cr12-notes p + p {
+  margin-top: 8px;
+}
+.cr12-notes a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .cr12-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cr12-card {
+    position: static;
+    order: -1;
+  }
+  .cr12-notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cr12-legend {
+    margin-left: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+@media (max-width: 620px) {
+  .cr12 {
+    padding-inline: 12px;
+  }
+  .cr12-controls {
+    position: static;
+  }
+  .cr12-controls label,
+  .cr12-sort {
+    width: 100%;
+  }
+  .cr12-controls select {
+    width: 100%;
+  }
+  .cr12-seg button {
+    flex: 1;
+    padding: 0 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr12-row {
+    transition: none;
+  }
+}

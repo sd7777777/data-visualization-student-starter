@@ -13,11 +13,19 @@ export interface AssignmentEntry {
     | '/week-7'
     | '/week-10'
     | '/week-11'
-    | '/week-12';
+    | '/week-12'
+    | '/week-13';
   sourceDirectory: string;
 }
 
 export const assignments: AssignmentEntry[] = [
+  {
+    id: 'week-13',
+    name: 'Iterate your Project — Brand vs. generic, state vs. nation',
+    navLabel: 'State vs. nation',
+    path: '/week-13',
+    sourceDirectory: 'src/assignments/week-13',
+  },
   {
     id: 'week-12',
     name: 'Try VizHub — Brand vs. generic cost per claim',

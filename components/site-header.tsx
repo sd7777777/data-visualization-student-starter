@@ -68,6 +68,9 @@ export function SiteHeader(
             <FaIcon name="book" /> Resources
           </summary>
           <div>
+            <a href={process.env.NODE_ENV === 'development' ? './week-13' : './week-13.html'}>
+              Week 13 · State vs. nation <FaIcon name="place" />
+            </a>
             <a href={process.env.NODE_ENV === 'development' ? './week-12' : './week-12.html'}>
               Week 12 · Cost per claim <FaIcon name="clinical" />
             </a>

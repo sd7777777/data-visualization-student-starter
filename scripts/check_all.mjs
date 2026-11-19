@@ -13,6 +13,7 @@ const suites = [
   'regions',
   'regional_lens',
   'cost_ratio',
+  'state_compare',
 ];
 for (const suite of suites) {
   const result = spawnSync(process.execPath, [`scripts/check_${suite}.mjs`], {

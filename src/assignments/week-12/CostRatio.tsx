@@ -134,8 +134,8 @@ export default function CostRatio() {
     <main className="cr12">
       <header className="cr12-top">
         <a href={base}>← Explorer</a>
-        <a href={`${base}${process.env.NODE_ENV === 'development' ? 'week-11' : 'week-11.html'}`}>
-          Week 11 regional lens
+        <a href={`${base}${process.env.NODE_ENV === 'development' ? 'week-13' : 'week-13.html'}`}>
+          Week 13: state vs. nation →
         </a>
       </header>
 

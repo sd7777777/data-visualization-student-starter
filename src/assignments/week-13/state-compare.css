@@ -1,0 +1,244 @@
+/* Week 13 additions on top of the Week 12 styles (cost-ratio.css). */
+.cr13 .cr12-row.dim {
+  opacity: 0.5;
+}
+
+.cr13-guide {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--link);
+  background: var(--panel);
+}
+.cr13-guide svg {
+  flex: none;
+}
+.cr13-guide svg text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.cr13-guide svg .cr13-guide-x {
+  fill: var(--ink);
+  font: 700 16px var(--font-data);
+}
+.cr13-guide ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 22px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.cr13-guide b {
+  color: var(--ink);
+}
+
+.cr13-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--strong-rule);
+  background: var(--panel);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cr13-reset:hover {
+  background: var(--mint-wash);
+}
+.cr13-ghost-key {
+  box-sizing: border-box;
+  border: 2px solid var(--muted);
+  background: transparent !important;
+}
+
+.cr13-colhead {
+  fill: var(--ink);
+  font: 700 12px var(--font-data);
+}
+.cr13-colsub {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.cr13-ghost circle {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+.cr13-us {
+  fill: var(--muted);
+  font: 400 13px var(--font-data);
+}
+
+.cr12-layout.cr13-layout {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+.cr13-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+.cr13-side > * {
+  min-width: 0;
+}
+.cr13 .cr13-card {
+  position: static;
+}
+@media (min-height: 1000px) and (min-width: 981px) {
+  .cr13-side {
+    position: sticky;
+    top: 86px;
+  }
+}
+.cr13-verdict {
+  margin-top: 8px !important;
+  font-size: 15px;
+}
+.cr13-vs {
+  width: 100%;
+  margin: 10px 0 12px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cr13-vs th,
+.cr13-vs td {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--grid);
+  text-align: right;
+}
+.cr13-vs thead th {
+  color: var(--muted);
+  font: 700 12px var(--font-data);
+}
+.cr13-vs th:first-child {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 400;
+}
+.cr13-vs td {
+  font-weight: 700;
+  padding-left: 12px;
+}
+.cr13-vs td:last-child {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.cr13-map {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}
+.cr13-map h2 {
+  font: 700 19px/1.2 'Times New Roman', Times, serif;
+}
+.cr13-map-sub {
+  margin: 4px 0 10px !important;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.cr13-map svg {
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+.cr13-tile {
+  cursor: pointer;
+}
+.cr13-tile text {
+  font: 700 10px var(--font-data);
+  pointer-events: none;
+}
+.cr13-tile rect {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.cr13-tile.empty rect {
+  stroke-dasharray: 2 2;
+}
+.cr13-tile:hover rect,
+.cr13-tile:focus rect {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.cr13-tile:focus {
+  outline: none;
+}
+.cr13-tile:focus-visible rect {
+  stroke: var(--link);
+  stroke-width: 3;
+}
+.cr13-tile.selected rect {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.cr13-ramp {
+  position: relative;
+  margin-top: 12px;
+}
+.cr13-ramp span {
+  display: block;
+  height: 10px;
+  border: 1px solid var(--rule);
+}
+.cr13-ramp i {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.cr13-ramp small {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  color: var(--muted);
+  font: 12px var(--font-data);
+}
+.cr13-ramp em {
+  font-style: normal;
+}
+.cr13-map-caption {
+  min-height: 3.9em;
+  margin-top: 10px !important;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.cr13-map-caption b {
+  color: var(--ink);
+}
+
+@media (max-width: 980px) {
+  .cr12-layout.cr13-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cr13-side {
+    order: -1;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    align-items: start;
+  }
+  .cr13-guide ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 620px) {
+  .cr13-guide {
+    display: block;
+  }
+  .cr13-guide svg {
+    display: none;
+  }
+  .cr13-reset {
+    width: 100%;
+    justify-content: center;
+  }
+}

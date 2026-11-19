@@ -50,6 +50,7 @@ src/assignments/
   week-10/                  Regional lens with an interactive legend
   week-11/                  Regional lens rebuilt from feedback
   week-12/                  Brand vs. generic cost per claim, from a VizHub prototype
+  week-13/                  Brand vs. generic, state vs. nation, with a state tile map
 public/data/
   prescriber-summary/       Browser-ready dataset and documentation
 scripts/
@@ -64,7 +65,7 @@ docs/
   deploy-pages.yml          GitHub Pages deployment
 ```
 
-The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas route, Weeks 10 and 11 separate regional lens routes (`week-10.html`, `week-11.html`), and Week 12 a cost-per-claim route (`week-12.html`). Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
+The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas route, Weeks 10 and 11 separate regional lens routes (`week-10.html`, `week-11.html`), Week 12 a cost-per-claim route (`week-12.html`), and Week 13 a state-vs-nation route (`week-13.html`). Assignment source folders remain separate so new work can be added without mixing preprocessing, charts, and page layout.
 
 ## Canvas assignment map
 
@@ -78,6 +79,7 @@ The Part D explorer remains one page. Week 7 adds a separate Trillion Atlas rout
 - **Week 8 — Iterate your Project:** [brand-name and generic drugs](src/assignments/week-08/README.md). New preprocessing adds CMS's brand/generic fields; a claims-versus-cost “flip”, a specialty gap chart and a state comparison are linked to the page's geography and specialty selection. [Open Week 8](https://sd7777777.github.io/data-visualization-student-starter/#week-8).
 - **Week 10 — Add a New Interaction:** [regional lens](src/assignments/week-10/README.md). A copy of the Week 8 state scatterplot with an interactive color legend: hover a Census region to preview it, click to keep it, and see its states and median in the scatterplot, a linked tile map and an every-specialty chart. [Open Week 10](https://sd7777777.github.io/data-visualization-student-starter/week-10.html).
 - **Week 11 — Iterate your Project:** [regional lens, rebuilt from feedback](src/assignments/week-11/README.md). A map with hue for the region and lightness for the value, region strips that glide into a scatterplot with regional distributions, a state compared with all four regions across every specialty, click-away clearing and a cost-versus-claims switch. [Open Week 11](https://sd7777777.github.io/data-visualization-student-starter/week-11.html).
+- **Week 13 — Iterate:** [brand vs. generic, state vs. nation](src/assignments/week-13/README.md). Builds on Week 12 after a first-time-user walkthrough. A chosen state is compared with national rings and a U.S. column, and a linked tile map shows any specialty in every state. The title now follows the place. [Open Week 13](https://sd7777777.github.io/data-visualization-student-starter/week-13.html).
 - **Week 12 — Try VizHub:** [brand vs. generic cost per claim](src/assignments/week-12/README.md). A dumbbell chart chosen from 20 VizHub prototypes and ported into this project after correcting its calculation. A brand-name claim costs about 42 times a generic claim nationally, and 181 times in Rheumatology. [Open Week 12](https://sd7777777.github.io/data-visualization-student-starter/week-12.html).
 - **Project extensions:** Figures 02–13 continue the same dataset story and are labeled separately from the weekly milestones. The [linked geography workspace](docs/GEOGRAPHY_WORKSPACE.md) replaces the earlier tile map and ranked-state view; their source remains preserved.
 
